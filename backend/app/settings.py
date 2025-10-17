@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     DB_ADDR: str = "db"
     DB_PORT: int = 5432
 
-    
+    KAFKA_HOSTS: str
 
 
 settings = Settings()
