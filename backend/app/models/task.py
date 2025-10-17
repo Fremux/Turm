@@ -36,13 +36,6 @@ class TaskItem(Base):
     category: Mapped['TaskCategory'] = relationship(back_populates='task_items')
     routing: Mapped['TaskRouting'] = relationship(back_populates='task_item')
 
-    __table_args__ = (
-        CheckConstraint(
-            "subtype IN ('action','entity','system')",
-            name='subtype_check'
-        ),
-    )
-
 
 class TaskRouting(Base):
     __tablename__ = 'task_routing'
