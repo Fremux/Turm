@@ -1,25 +1,28 @@
-from contextlib import asynccontextmanager
-
 import uvicorn
-from core.db import init_database
+
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.cors import CORSMiddleware
-from routers import router
 
+from routers import router
 from settings import settings
+from core.db import init_database
+from core.broker import consumer_start, consumer_stop, producer_start, producer_stop
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     await init_database()
+    await consumer_start()
+    await producer_start()
     yield
-    # Close connection to DB
+    await consumer_stop()
+    await producer_stop()
 
 app = FastAPI(debug=settings.SERVER_TEST,
               lifespan=lifespan,
-              title="GoraSLavoy",
-              )
+              title="GoraSLavoy",)
 
 app.add_middleware(
     GZipMiddleware,
