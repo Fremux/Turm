@@ -14,11 +14,11 @@ from core.broker import consumer_start, consumer_stop, producer_start, producer_
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     await init_database()
-    await consumer_start()
-    await producer_start()
+    #await consumer_start()
+    #await producer_start()
     yield
-    await consumer_stop()
-    await producer_stop()
+    #await consumer_stop()
+    #await producer_stop()
 
 
 app = FastAPI(
