@@ -41,7 +41,7 @@ class RoleAssignmentAgent:
     def _load_org_data(self) -> Dict[str, Any]:
         """Load organizational data from users.json."""
         try:
-            org_file = Path("/root/v1_last/users.json")
+            org_file = Path("/root/Turm/ml/users.json")
             with open(org_file, 'r', encoding='utf-8') as f:
                 return json.load(f)
         except Exception as e:
@@ -240,7 +240,7 @@ class RoleAssignmentAgent:
                 "role_assigned",
                 domain=assignment.domain,
                 matched_key=assignment.matched_key,
-                primary_role_id=assignment.primary_role["id"] if assignment.primary_role else None,
+                primary_role_id=assignment.primary_role.id if assignment.primary_role else None,
                 confidence=assignment.confidence
             )
             

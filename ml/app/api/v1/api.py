@@ -13,6 +13,9 @@ from app.api.v1.agent import router as agent_router
 from app.api.v1.documents import router as documents_router
 from app.api.v1.entities import router as entities_router
 from app.api.v1.analyses import router as analyses_router
+from app.api.v1.categories import router as categories_router
+from app.api.v1.agents import router as agents_router
+from app.api.v1.tasks import router as tasks_router
 from app.core.logging import logger
 
 api_router = APIRouter()
@@ -25,6 +28,9 @@ api_router.include_router(agent_router, prefix="/agent", tags=["agent"])
 api_router.include_router(documents_router, prefix="/documents", tags=["documents"])
 api_router.include_router(entities_router, prefix="/entities", tags=["entities"])
 api_router.include_router(analyses_router, prefix="/analyses", tags=["analyses"])
+api_router.include_router(categories_router, prefix="/admin", tags=["admin"])
+api_router.include_router(agents_router, prefix="/admin", tags=["admin"])
+api_router.include_router(tasks_router, prefix="/admin", tags=["admin"])
 
 
 @api_router.get("/health")

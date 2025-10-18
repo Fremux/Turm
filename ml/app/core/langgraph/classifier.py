@@ -6,10 +6,13 @@ from functools import lru_cache
 
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_openai import ChatOpenAI
+from sqlmodel import Session, select
 
 from app.core.config import settings
 from app.core.logging import logger
 from app.schemas.classification import TicketClassification
+from app.models.category import Category
+from app.services.database import database_service
 
 
 class ClassificationAgent:
@@ -29,61 +32,101 @@ class ClassificationAgent:
         # Simple cache for recent classifications
         self._cache = {}
         
-        self.system_prompt = """Ты эксперт по классификации заявок службы поддержки по отделам.
+        # Load categories from database and generate prompt
+        self._load_categories()
+    
+    def _load_categories(self):
+        """Load categories from database and generate system prompt."""
+        try:
+            with Session(database_service.engine) as session:
+                # Get all active categories
+                categories = session.exec(
+                    select(Category).where(Category.is_active == True)
+                ).all()
+                
+                if not categories:
+                    logger.warning("no_active_categories_found_using_fallback")
+                    self._use_fallback_prompt()
+                    return
+                
+                # Generate dynamic system prompt
+                self.system_prompt = self._generate_system_prompt(categories)
+                logger.info(
+                    "categories_loaded_for_classification",
+                    categories_count=len(categories),
+                    category_names=[cat.name for cat in categories]
+                )
+        except Exception as e:
+            logger.error("failed_to_load_categories_for_classification", error=str(e), exc_info=True)
+            self._use_fallback_prompt()
+    
+    def _generate_system_prompt(self, categories: list[Category]) -> str:
+        """Generate system prompt dynamically from categories.
+        
+        Args:
+            categories: List of Category objects from database
+            
+        Returns:
+            Generated system prompt string
+        """
+        # Build categories section
+        categories_text = ""
+        category_names = []
+        border_cases_list = []
+        
+        for cat in categories:
+            category_names.append(cat.name)
+            categories_text += f"\n### **{cat.name}** — {cat.display_name}\n"
+            
+            # Add description (basic info)
+            if cat.description:
+                categories_text += f"Описание: {cat.description}\n\n"
+            
+            # Add detailed "О чём" section if available
+            if cat.about_text:
+                categories_text += f"О чём: {cat.about_text}\n\n"
+            
+            # Add "Частые интенты" section if available
+            if cat.common_intents:
+                categories_text += f"Частые интенты: {cat.common_intents}\n\n"
+            
+            # Add "Ключевые маркеры" section if available
+            if cat.key_markers:
+                categories_text += f"Ключевые маркеры: {cat.key_markers}\n\n"
+            
+            # Add "Примеры" section if available
+            if cat.example_queries:
+                categories_text += f"Примеры: {cat.example_queries}\n\n"
+            
+            # Collect border cases for later
+            if cat.border_cases:
+                border_cases_list.append(cat.border_cases)
+        
+        # Add 'other' as fallback
+        category_names.append("other")
+        categories_text += "\n### **other** — Другое (все остальное)\n"
+        categories_text += "О чём: любые запросы, которые не относятся к указанным выше категориям. Это могут быть общие вопросы, личные обращения, нерабочие темы, неясные или нерелевантные сообщения.\n\n"
+        categories_text += "Примеры: вопросы о погоде, личные беседы, поздравления, запросы не связанные с работой компании, неясные или бессвязные сообщения, тестовые сообщения.\n"
+        
+        # Build border cases section
+        border_cases_text = ""
+        if border_cases_list:
+            border_cases_text = "\n## Пограничные случаи:\n"
+            for bc in border_cases_list:
+                border_cases_text += f"- {bc}\n"
+        
+        # Build valid categories string
+        valid_categories = "|".join(category_names)
+        
+        prompt = f"""Ты эксперт по классификации заявок службы поддержки по отделам.
 
 ВАЖНО: Отвечай ТОЛЬКО на русском языке. Не используй символы или слова из других языков кроме английского и русского. 
 
 Анализируй сообщения и классифицируй их по категориям (отделам) и приоритетам.
 
 ## Категории (отделы):
-
-### **hr** — HR (кадры, зарплата, льготы, ЛК, обучение)
-О чём: трудовые отношения и персонал — оформление/изменение условий, отпуска/командировки, справки для сотрудника, ЛК, обучение/LMS, льготы/ДМС, индексация/оклад.
-
-Частые интенты: согласовать/оформить/изменить; предоставить справку; открыть доступ к ЛК; записать на обучение; исправить начисление.
-
-Ключевые маркеры: «отпуск», «приказ/допсоглашение», «ЛК сотрудника», «ДМС/льготы», «2-НДФЛ/182н», «обучение/LMS», «оклад/индексация», «справка для сотрудника», «командировка», «график работы».
-
-Примеры: оформить отпуск, справка 2-НДФЛ, доступ к ЛК сотрудника, запись на обучение, изменить график работы, льготы/ДМС.
-
-### **it** — IT (доступы, ПО, сеть, почта, DevOps, инфра)
-О чём: учётные записи и права (AD/VPN/SSO/MFA), рабочее ПО и установка, сеть/VPN/Wi-Fi/почта, Exchange/M365, Dev/CI/CD/K8s, бэкапы, мониторинг/логи, VDI/RDP, файлы/хранилища.
-
-Частые интенты: создать/восстановить доступ; выдать права/AD; установить ПО; починить сеть/VPN/почту; настроить оборудование (драйвер/принтер); восстановить из бэкапа; устранить инциденты CI/CD/K8s.
-
-Ключевые маркеры: «AD/группа/SSO/VPN/MFA», «Teams/Outlook/SharePoint», «почта не приходит», «GitLab/Jenkins/K8s/Helm», «Prometheus/Grafana/Splunk», «RDP/VDI», «принтер не печатает (драйвер/доступ)», «установить ПО», «настроить», «не работает (про ПО/сеть)».
-
-Примеры: создать учётку AD, установить ПО, проблема с почтой, настроить VPN, восстановить доступ, проблемы с Teams/Outlook, CI/CD pipeline не работает.
-
-### **finance** — Finance (бухгалтерия, налоги, платежи, ЭДО)
-О чём: бухучёт/ЗУП (в части бухгалтерии), налоги (НДС, 6-НДФЛ, книга покупок/продаж), отчётность/декларации, платежи/реестры/банки, ЭДО/ЭП, ERP (1С/SAP/Oracle EBS).
-
-Частые интенты: проверить/исправить алгоритм (проводки/начисления); сформировать/выгрузить отчёт/декларацию; настроить налоговые коды/толеранс; оформить платёж/реестр; выдать справки (фин.); настроить ЭП/ЭДО.
-
-Ключевые маркеры: «проводки/сверка/реестр», «НДС/6-НДФЛ/книга покупок», «выгрузка отчёта/декларации», «платёж/банк-клиент», «ЭП/Крипто-провайдер», «Диадок/СБИС/Контур», «1С/SAP/Oracle», «бухгалтерия», «налог».
-
-Примеры: проверить проводки, сформировать декларацию, оформить платёж, настроить ЭДО, выгрузка отчёта, книга покупок/продаж.
-
-### **office** — Office (пропуска, парковка, переговорные, рабочие места)
-О чём: физический офис и сервисы — пропуска/парковка/турникеты, переговорные (бронирование/настройка AV), организация/перенос рабочих мест, ремонт/замена офисного оборудования, гостевой Wi-Fi, телефония, ресепшен.
-
-Частые интенты: пропуск оформить/заменить/продлить; парковку добавить/продлить; доступ к турникетам/этажам; переговорные забронировать/настроить; организовать/перенести рабочее место; ремонт/замена офисного оборудования; гостевые сервисы; телефония.
-
-Ключевые маркеры: «пропуск/парковка/турникет», «переговорная/проектор/AV», «перенос рабочего места/монтаж», «ресепшен/очередь», «гостевой Wi-Fi», «внутренняя телефония/ATS», «забронировать», «организовать место».
-
-Примеры: оформить пропуск, продлить парковку, забронировать переговорную, перенести рабочее место, гостевой Wi-Fi, настроить проектор, телефония.
-
-### **other** — Другое (все остальное)
-О чём: любые запросы, которые не относятся к HR, IT, Finance или Office. Это могут быть общие вопросы, личные обращения, нерабочие темы, неясные или нерелевантные сообщения.
-
-Примеры: вопросы о погоде, личные беседы, поздравления, запросы не связанные с работой компании, неясные или бессвязные сообщения, тестовые сообщения.
-
-## Пограничные случаи:
-- Справка для сотрудника (2-НДФЛ, стаж) → **hr**; финансовые справки по контрагентам → **finance**
-- Доступ к системам/установка ПО/почта → **it**; отпуск/ЛК сотрудника → **hr**
-- Принтер не печатает (драйвер/права) → **it**; переставить принтер → **office**
-- Outlook не синхронизирует календарь → **it**; забронировать переговорную → **office**
-- Проблемы входа в банк-клиент (ПО/токен) → **it**; операция платежа → **finance**
+{categories_text}
+{border_cases_text}
 
 ## Приоритеты:
 - **urgent**: Критично, система не работает, блокирует работу многих людей
@@ -91,8 +134,58 @@ class ClassificationAgent:
 - **medium**: Стандартная заявка, не критично
 - **low**: Общие вопросы, консультация
 
+## Намерения (intents) - ОБЯЗАТЕЛЬНОЕ ПОЛЕ:
+- **task_creation**: Пользователь просит ВЫПОЛНИТЬ действие (починить, создать, оформить, заменить, установить, сделать, настроить)
+- **ask_question**: Пользователь задает вопрос или просит информацию (как, где, когда, что, почему)
+- **report_issue**: Пользователь сообщает о проблеме без явного запроса на действие
+- **request_document**: Пользователь просит предоставить документ/справку
+
+**ВАЖНО**: Если видишь слова ПОЧИНИТЬ, СДЕЛАТЬ, СОЗДАТЬ, ОФОРМИТЬ, ЗАМЕНИТЬ, УСТАНОВИТЬ - это ВСЕГДА intent="task_creation"!
+
 Верни ТОЛЬКО JSON в формате:
-{"category": "hr|it|finance|office|other", "priority": "urgent|high|medium|low", "reasoning": "краткое объяснение", "confidence": 0.85}"""
+{{"category": "{valid_categories}", "priority": "urgent|high|medium|low", "intent": "task_creation|ask_question|report_issue|request_document", "reasoning": "краткое объяснение", "confidence": 0.85}}
+
+ОБЯЗАТЕЛЬНО включи поле "intent" в ответ!"""
+
+        return prompt
+    
+    def _use_fallback_prompt(self):
+        """Use fallback minimal prompt if database load fails.
+        
+        This is only used as emergency fallback when database is unavailable.
+        Normal operation loads categories from database dynamically.
+        """
+        logger.warning("using_fallback_prompt_database_unavailable")
+        
+        self.system_prompt = """Ты эксперт по классификации заявок службы поддержки по отделам.
+
+ВАЖНО: Отвечай ТОЛЬКО на русском языке.
+
+Анализируй сообщения и классифицируй их по категориям и приоритетам.
+
+## Категории:
+- **hr**: HR, кадры, отпуска, зарплата, справки для сотрудников
+- **it**: IT, доступы, ПО, сеть, почта, оборудование
+- **finance**: Финансы, бухгалтерия, налоги, платежи
+- **office**: Офис, пропуска, парковка, переговорные, рабочие места
+- **other**: Все остальное
+
+## Приоритеты:
+- **urgent**: Критично, блокирует работу
+- **high**: Важная срочная задача
+- **medium**: Стандартная заявка
+- **low**: Общие вопросы
+
+## Намерения (intents):
+- **task_creation**: Пользователь просит ВЫПОЛНИТЬ действие (починить, создать, оформить, заменить, установить, сделать)
+- **ask_question**: Пользователь задает вопрос или просит информацию (как, где, когда, что)
+- **report_issue**: Пользователь сообщает о проблеме без явного запроса на действие
+- **request_document**: Пользователь просит предоставить документ/справку
+
+Верни ТОЛЬКО JSON в формате:
+{"category": "hr|it|finance|office|other", "priority": "urgent|high|medium|low", "intent": "task_creation|ask_question|report_issue|request_document", "reasoning": "краткое объяснение", "confidence": 0.85}
+
+**ВАЖНО**: Если пользователь просит что-то СДЕЛАТЬ/ПОЧИНИТЬ/СОЗДАТЬ/ОФОРМИТЬ - это ОБЯЗАТЕЛЬНО intent="task_creation"!"""
 
     async def classify(self, message: str) -> Optional[TicketClassification]:
         """Classify a support ticket message.
@@ -138,6 +231,7 @@ class ClassificationAgent:
             classification = TicketClassification(
                 category=data["category"],
                 priority=data["priority"],
+                intent=data.get("intent"),  # Optional field
                 reasoning=data.get("reasoning", ""),
                 confidence=data.get("confidence", 0.8)
             )
@@ -152,6 +246,7 @@ class ClassificationAgent:
                 "message_classified",
                 category=classification.category,
                 priority=classification.priority,
+                intent=classification.intent,
                 confidence=classification.confidence
             )
             
@@ -190,6 +285,15 @@ class ClassificationAgent:
         except Exception as e:
             logger.error("classification_error", error=str(e), exc_info=True)
             return None
+    
+    def refresh_categories(self):
+        """Refresh categories from database and regenerate system prompt.
+        
+        This should be called when categories are added/updated/deleted.
+        """
+        logger.info("refreshing_categories_for_classification")
+        self._cache.clear()  # Clear cache when categories change
+        self._load_categories()
 
 
 # Global instance

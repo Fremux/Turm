@@ -79,8 +79,59 @@ echo "Database User: $( [[ -n ${POSTGRES_USER:-${DB_USER:-}} ]] && echo 'set' ||
 echo "LLM Model: ${LLM_MODEL:-Not set}"
 echo "Debug Mode: ${DEBUG:-false}"
 
-# Run database migrations if necessary
-# e.g., alembic upgrade head
+# Wait for database to be ready
+echo "Waiting for database to be ready..."
+max_attempts=30
+attempt=0
+while [ $attempt -lt $max_attempts ]; do
+    if /app/.venv/bin/python -c "import psycopg2; psycopg2.connect(host='${POSTGRES_HOST}', port='${POSTGRES_PORT}', dbname='${POSTGRES_DB}', user='${POSTGRES_USER}', password='${POSTGRES_PASSWORD}')" 2>/dev/null; then
+        echo "Database is ready!"
+        break
+    fi
+    attempt=$((attempt + 1))
+    echo "Attempt $attempt/$max_attempts: Database not ready yet, waiting..."
+    sleep 2
+done
 
+if [ $attempt -eq $max_attempts ]; then
+    echo "ERROR: Database failed to become ready after $max_attempts attempts"
+    exit 1
+fi
+
+# Run database migrations
+echo "Running database migrations..."
+if [ -f "/app/migrations/create_categories_tables.py" ]; then
+    /app/.venv/bin/python /app/migrations/create_categories_tables.py || {
+        echo "Warning: Categories migration failed, continuing anyway..."
+    }
+fi
+
+if [ -f "/app/migrations/create_agents_tables.py" ]; then
+    /app/.venv/bin/python /app/migrations/create_agents_tables.py || {
+        echo "Warning: Agents migration failed, continuing anyway..."
+    }
+fi
+
+if [ -f "/app/migrations/add_embedding_settings_to_categories.py" ]; then
+    /app/.venv/bin/python /app/migrations/add_embedding_settings_to_categories.py || {
+        echo "Warning: Embedding settings migration failed, continuing anyway..."
+    }
+fi
+
+if [ -f "/app/migrations/create_tasks_table.py" ]; then
+    /app/.venv/bin/python /app/migrations/create_tasks_table.py || {
+        echo "Warning: Tasks table migration failed, continuing anyway..."
+    }
+fi
+
+# Initialize default categories if they don't exist
+echo "Initializing default categories..."
+if [ -f "/app/app/scripts/init_default_data.py" ]; then
+    /app/.venv/bin/python /app/app/scripts/init_default_data.py || {
+        echo "Warning: Default categories initialization failed, continuing anyway..."
+    }
+fi
+
+echo "Starting application..."
 # Execute the CMD
 exec "$@"

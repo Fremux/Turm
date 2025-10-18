@@ -183,8 +183,8 @@ class Settings:
         self.QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", "")  # Optional for cloud
         
         # Embedding Configuration
-        self.EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "Qwen/Qwen3-Embedding-4B")
-        self.EMBEDDING_DIMENSION = int(os.getenv("EMBEDDING_DIMENSION", "2560"))  # Actual Qwen3-Embedding-4B dim
+        self.EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "Qwen/Qwen3-Embedding-8B")
+        self.EMBEDDING_DIMENSION = int(os.getenv("EMBEDDING_DIMENSION", "4096"))  # Actual Qwen3-Embedding-4B dim
         self.EMBEDDING_KEY = os.getenv("EMBEDDING_KEY", "")  # DeepInfra API key
         self.EMBEDDING_URL = os.getenv("EMBEDDING_URL", "https://api.deepinfra.com/v1/openai")
 

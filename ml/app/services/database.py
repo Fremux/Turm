@@ -1,6 +1,7 @@
 """This file contains the database service for the application."""
 
 from typing import (
+    Generator,
     List,
     Optional,
 )
@@ -262,11 +263,15 @@ class DatabaseService:
 database_service = DatabaseService()
 
 
-async def get_session():
-    """Dependency for getting async database session.
+def get_db_session() -> Generator[Session, None, None]:
+    """Dependency for getting database session.
     
     Yields:
-        Session: An async database session
+        Session: A database session
     """
     with Session(database_service.engine) as session:
         yield session
+
+
+# Alias for backward compatibility
+get_session = get_db_session

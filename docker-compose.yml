@@ -23,7 +23,23 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - turm_net
-
+  nginx:
+    image: turm-nginx
+    build: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: always
+    volumes:
+      - ./nginx/public:/public
+      - /etc/letsencrypt:/etc/letsencrypt
+    logging:
+      driver: local
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - turm_net
   #redpanda:
   #  image: redpandadata/redpanda:latest
 #    command:

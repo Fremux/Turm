@@ -64,9 +64,31 @@ class DeepInfraEmbeddings(BaseEmbeddings):
             Embedding vector as numpy array
         """
         try:
+            # Ensure input is a string, not a list
+            if isinstance(text, (list, tuple)):
+                logger.warning(
+                    "embed_received_list",
+                    type=type(text).__name__,
+                    length=len(text),
+                    message="embed() received a list/tuple instead of string, converting"
+                )
+                text = " ".join(str(item) for item in text)
+            
+            # Convert to string if needed
+            text = str(text)
+            
+            # Log if text is very long
+            if len(text) > 8000:
+                logger.warning(
+                    "embedding_text_too_long",
+                    text_length=len(text),
+                    max_recommended=8000,
+                    message="Text may exceed embedding model's context window"
+                )
+            
             response = self.client.embeddings.create(
                 model=self.model,
-                input=text,
+                input=text,  # Must be a single string
                 encoding_format="float"
             )
             
@@ -77,7 +99,9 @@ class DeepInfraEmbeddings(BaseEmbeddings):
             logger.error(
                 "embedding_error",
                 error=str(e),
-                text_length=len(text),
+                text_type=type(text).__name__,
+                text_length=len(text) if isinstance(text, (str, list)) else "unknown",
+                text_preview=str(text)[:200] if text else "empty",
                 exc_info=True
             )
             raise
@@ -92,24 +116,67 @@ class DeepInfraEmbeddings(BaseEmbeddings):
             List of embedding vectors as numpy arrays
         """
         try:
-            response = self.client.embeddings.create(
-                model=self.model,
-                input=texts,
-                encoding_format="float"
-            )
+                # API has a limit of 1024 items per request
+            # If we have more, split into batches
+            MAX_BATCH_SIZE = 512  # Conservative limit (API allows 1024)
             
-            embeddings = [
-                np.array(data.embedding, dtype=np.float32)
-                for data in response.data
-            ]
-            
-            logger.info(
-                "batch_embeddings_generated",
-                count=len(embeddings),
-                total_tokens=response.usage.prompt_tokens
-            )
-            
-            return embeddings
+            if len(texts) > MAX_BATCH_SIZE:
+                logger.info(
+                    "splitting_large_batch",
+                    total_items=len(texts),
+                    batch_size=MAX_BATCH_SIZE,
+                    num_batches=(len(texts) + MAX_BATCH_SIZE - 1) // MAX_BATCH_SIZE
+                )
+                
+                all_embeddings = []
+                for i in range(0, len(texts), MAX_BATCH_SIZE):
+                    batch = texts[i:i + MAX_BATCH_SIZE]
+                    
+                    logger.debug(
+                        "processing_embedding_batch",
+                        batch_num=i // MAX_BATCH_SIZE + 1,
+                        batch_size=len(batch)
+                    )
+                    
+                    response = self.client.embeddings.create(
+                        model=self.model,
+                        input=batch,
+                        encoding_format="float"
+                    )
+                    
+                    batch_embeddings = [
+                        np.array(data.embedding, dtype=np.float32)
+                        for data in response.data
+                    ]
+                    all_embeddings.extend(batch_embeddings)
+                
+                logger.info(
+                    "batch_embeddings_generated",
+                    total_count=len(all_embeddings),
+                    num_batches=(len(texts) + MAX_BATCH_SIZE - 1) // MAX_BATCH_SIZE
+                )
+                
+                return all_embeddings
+            else:
+                # Small batch, process normally
+                response = self.client.embeddings.create(
+                    model=self.model,
+                    input=texts,
+                    encoding_format="float"
+                )
+                
+                embeddings = [
+                    np.array(data.embedding, dtype=np.float32)
+                    for data in response.data
+                ]
+                
+                logger.info(
+                    "batch_embeddings_generated",
+                    count=len(embeddings),
+                    total_tokens=response.usage.prompt_tokens
+                )
+                
+                return embeddings
             
         except Exception as e:
             logger.error(

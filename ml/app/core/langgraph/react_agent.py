@@ -24,6 +24,7 @@ from langgraph.prebuilt import ToolNode
 from app.core.config import settings
 from app.core.logging import logger
 from app.schemas.classification import TicketClassification
+from app.core.langgraph.tools import tools
 
 
 class AgentState(TypedDict):
@@ -58,11 +59,11 @@ class ReActAgent:
         """Initialize the ReAct agent.
         
         Args:
-            tools: List of tools available to the agent (not used currently)
+            tools: List of tools available to the agent
         """
-        # No tools for now - model works autonomously
-        self.tools = []
-        self.tools_by_name = {}
+        # Use provided tools or default tools (knowledge search)
+        self.tools = tools if tools is not None else []
+        self.tools_by_name = {tool.name: tool for tool in self.tools}
         
         # Initialize LLM for the agent
         self.llm = ChatOpenAI(
@@ -73,15 +74,22 @@ class ReActAgent:
             streaming=False,
         )
         
-        # No tools binding - pure reasoning agent
-        self.llm_with_tools = self.llm
+        # Bind tools to LLM if tools are available
+        if self.tools:
+            self.llm_with_tools = self.llm.bind_tools(self.tools)
+            logger.info("react_agent_tools_bound", tools_count=len(self.tools), tools=[t.name for t in self.tools])
+        else:
+            self.llm_with_tools = self.llm
+            logger.info("react_agent_no_tools")
         
         # System prompt for the agent
-        self.system_prompt = """Ты эксперт-помощник IT службы поддержки. Ты анализируешь технические проблемы и помогаешь их решать.
+        self.system_prompt = """Ты эксперт-помощник службы поддержки. Ты анализируешь проблемы пользователей и помогаешь их решать.
 
 ВАЖНО: Отвечай ТОЛЬКО на русском языке. Никогда не используй символы из других языков (кроме английских технических терминов).
 
-Твоя задача - АВТОНОМНЫЙ АНАЛИЗ проблемы:
+У тебя есть доступ к БАЗЕ ЗНАНИЙ компании через инструмент `search_knowledge_base`.
+
+Твоя задача - РЕШЕНИЕ ПРОБЛЕМ с использованием базы знаний:
 
 1. **Оценка информации**: Проанализируй, достаточно ли данных для решения
    
@@ -89,30 +97,51 @@ class ReActAgent:
    Начни ответ с: **Оценка информации**: Информации недостаточно
    Затем раздел: **Вопросы для уточнения**:
    - Какая точная ошибка? (текст ошибки, код)
-   - Какие команды/действия уже пробовали?
+   - Какие действия уже пробовали?
    - Что изменилось перед появлением проблемы?
    НЕ давай решение, если данных недостаточно - только вопросы!
    
 3. **Если информации ДОСТАТОЧНО** (есть конкретные симптомы, ошибки, контекст):
-   Начни ответ с: **Оценка информации**: Данных достаточно для начала анализа
-   Обязательно включи разделы:
-   - **Анализ**: опиши что происходит и почему
-   - **Вероятная причина**: определи корень проблемы
-   - **Решение**: дай пошаговую инструкцию с конкретными командами
-   - **Проверка**: как убедиться, что проблема решена
+   
+   АЛГОРИТМ РЕШЕНИЯ:
+   
+   a) СНАЧАЛА ищи в базе знаний:
+      - Используй `search_knowledge_base` с конкретным запросом и правильной категорией
+      - Категории: 'it', 'hr', 'finance', 'office'
+      - Извлеки ключевые слова из проблемы для поиска
+      
+   b) ОЦЕНИ найденные документы:
+      - Проверь релевантность (score > 0.7 - релевантен)
+      - Если найдены релевантные документы - используй их для ответа
+      - Если документы не релевантны или не найдены - используй свои знания
+      
+   c) СФОРМИРУЙ ответ:
+      Начни с: **Оценка информации**: Данных достаточно для начала анализа
+      
+      Если найдена информация в базе знаний:
+      - **Источник**: упомяни, что информация найдена в базе знаний
+      - **Решение**: дай пошаговую инструкцию на основе найденных документов
+      - **Проверка**: как убедиться, что проблема решена
+      
+      Если информация НЕ найдена в базе:
+      - **Анализ**: опиши что происходит и почему
+      - **Вероятная причина**: определи корень проблемы
+      - **Решение**: дай пошаговую инструкцию на основе своих знаний
+      - **Проверка**: как убедиться, что проблема решена
 
 Стиль работы:
+- ВСЕГДА проверяй базу знаний ПЕРЕД тем как дать решение
 - Анализируй системно: от симптомов к причине
-- Думай как опытный системный администратор
 - Предлагай реальные, проверенные решения
-- Структурируй ответ четко: проблема → причина → решение → проверка
+- Структурируй ответ четко: поиск → анализ → решение → проверка
+- Если база знаний не помогла - используй свои знания
 
 КРИТИЧЕСКИ ВАЖНО:
-- Если проблема слишком общая ("не работает докер", "ошибка") - ОБЯЗАТЕЛЬНО задай вопросы
-- НЕ придумывай детали, если их нет в описании проблемы
-- ЛИБО вопросы, ЛИБО решение - не смешивай их в одном ответе
-- НЕ используй несуществующие инструменты или базы знаний
-- Основывайся на своих знаниях IT систем (Linux, Docker, сети и т.д.)
+- ОБЯЗАТЕЛЬНО используй search_knowledge_base для каждой проблемы при наличии достаточной информации
+- Проверяй score найденных документов: > 0.7 = релевантен, < 0.5 = не релевантен
+- Если проблема слишком общая - задай вопросы ВМЕСТО поиска
+- НЕ придумывай детали, если их нет
+- ЛИБО вопросы, ЛИБО (поиск + решение) - не смешивай
 
 САМ РЕШАЙ когда достаточно информации для решения - не спрашивай разрешения."""
         
@@ -124,21 +153,62 @@ class ReActAgent:
         if self.graph is not None:
             return self.graph
             
-        # Create the state graph (simplified - no tools)
+        # Create the state graph
         workflow = StateGraph(AgentState)
         
-        # Add only agent node (no tools)
+        # Add agent node
         workflow.add_node("agent", self._call_agent)
         
-        # Set entry point and finish point
+        # If tools are available, add tools node
+        if self.tools:
+            # Add tools node using LangGraph's ToolNode
+            tool_node = ToolNode(self.tools)
+            workflow.add_node("tools", tool_node)
+            
+            # Add conditional edges from agent
+            workflow.add_conditional_edges(
+                "agent",
+                self._should_continue,
+                {
+                    "continue": "tools",  # If agent calls tools
+                    "end": END  # If agent provides final answer
+                }
+            )
+            
+            # Add edge from tools back to agent
+            workflow.add_edge("tools", "agent")
+            
+            logger.info("react_agent_graph_created", mode="with_tools", tools_count=len(self.tools))
+        else:
+            # No tools - simple direct flow
+            workflow.set_finish_point("agent")
+            logger.info("react_agent_graph_created", mode="autonomous_reasoning")
+        
+        # Set entry point
         workflow.set_entry_point("agent")
-        workflow.set_finish_point("agent")
         
         # Compile the graph
         self.graph = workflow.compile()
         
-        logger.info("react_agent_graph_created", mode="autonomous_reasoning")
         return self.graph
+    
+    def _should_continue(self, state: AgentState) -> str:
+        """Determine if the agent should continue or end.
+        
+        Args:
+            state: Current agent state
+            
+        Returns:
+            "continue" if agent wants to use tools, "end" otherwise
+        """
+        messages = state["messages"]
+        last_message = messages[-1]
+        
+        # Check if last message has tool calls
+        if hasattr(last_message, "tool_calls") and last_message.tool_calls:
+            return "continue"
+        
+        return "end"
     
     async def _call_agent(self, state: AgentState) -> Dict[str, Any]:
         """Call the agent with the current state.
@@ -367,9 +437,13 @@ def get_react_agent() -> ReActAgent:
     global _react_agent_instance
     
     if _react_agent_instance is None:
-        # Create agent without tools (autonomous reasoning mode)
-        _react_agent_instance = ReActAgent()
-        logger.info("react_agent_instance_created", mode="autonomous")
+        # Create agent with knowledge search tools
+        _react_agent_instance = ReActAgent(tools=tools)
+        logger.info(
+            "react_agent_instance_created",
+            mode="with_knowledge_search",
+            tools_count=len(tools)
+        )
     
     return _react_agent_instance
 

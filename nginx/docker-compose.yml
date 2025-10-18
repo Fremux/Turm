@@ -1,0 +1,16 @@
+services:
+  nginx:
+    image: turm-nginx
+    build: .
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: always
+    volumes:
+      - ./public:/public
+      - /etc/letsencrypt:/etc/letsencrypt
+    logging:
+      driver: local
+      options:
+        max-size: "10m"
+        max-file: "3"

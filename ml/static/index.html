@@ -1161,7 +1161,7 @@
                             <div class="form-group">
                                 <label>Embedding Size</label>
                                 <select id="embeddingSize">
-                                    <option value="2560" selected>2560 (Qwen3-Embedding-4B)</option>
+                                    <option value="4096" selected>4096 (Qwen/Qwen3-Embedding-8B)</option>
                                     <option value="1536">1536 (OpenAI text-embedding-3-small)</option>
                                     <option value="3072">3072 (OpenAI text-embedding-3-large)</option>
                                     <option value="768">768 (sentence-transformers)</option>
@@ -1264,15 +1264,23 @@
             }
 
             setActiveSession(sessionId) {
-                this.activeSession = sessionId;
+                console.log('Setting active session:', sessionId);
+
+                // Clear previous session data
                 this.messages = [];
                 this.entities = [];
+                this.filteredEntities = [];
+
+                // Set new active session
+                this.activeSession = sessionId;
             }
 
             clearSession() {
+                console.log('Clearing all session data');
                 this.activeSession = null;
                 this.messages = [];
                 this.entities = [];
+                this.filteredEntities = [];
             }
         }
 
@@ -1303,8 +1311,20 @@
             // Don't reload if same user
             if (userId === state.userId) return;
 
+            console.log('Changing user from', state.userId, 'to', userId);
+
+            // Update state BEFORE clearing
+            const oldUserId = state.userId;
             state.userId = userId;
+
+            // Clear all session data
             state.clearSession();
+
+            // Clear UI immediately
+            const messagesContainer = document.getElementById('messagesContainer');
+            messagesContainer.innerHTML = '';
+            document.getElementById('entitiesList').innerHTML = '<div class="no-entities">No information extracted yet.</div>';
+            document.getElementById('sessionsList').innerHTML = '<div class="loading"><div class="loading-spinner"></div><p>Loading sessions...</p></div>';
 
             // Update URL to persist user_id
             const url = new URL(window.location);
@@ -1321,9 +1341,13 @@
             // Auto-select first session if available
             if (state.sessions.length > 0) {
                 await selectSession(state.sessions[0]);
+            } else {
+                // No sessions for this user
+                renderEntities();
             }
 
             showToast(`Switched to User ID: ${userId}`, 'success');
+            console.log('User changed successfully');
         }
 
         // Session Management
@@ -1345,6 +1369,8 @@
 
         function renderSessions() {
             const container = document.getElementById('sessionsList');
+
+            // Always clear container first
             container.innerHTML = '';
 
             if (state.sessions.length === 0) {
@@ -1352,9 +1378,13 @@
                 return;
             }
 
+            console.log('Rendering', state.sessions.length, 'sessions. Active:', state.activeSession);
+
             state.sessions.forEach(session => {
+                const isActive = session.session_id === state.activeSession;
                 const sessionDiv = document.createElement('div');
-                sessionDiv.className = 'session-item' + (session.session_id === state.activeSession ? ' active' : '');
+                sessionDiv.className = 'session-item' + (isActive ? ' active' : '');
+                sessionDiv.dataset.sessionId = session.session_id; // For debugging
 
                 const name = session.name || `Session ${session.session_id.substring(0, 8)}`;
 
@@ -1453,24 +1483,31 @@
                 // Switch to chat tab first
                 switchTab('chat');
 
-                // Clear previous messages first to avoid showing old data
-                state.messages = [];
-                renderMessages();
-
-                // Set active session
+                // IMPORTANT: Set active session BEFORE clearing to ensure proper state
+                const oldSessionId = state.activeSession;
                 state.setActiveSession(session.session_id);
 
-                // Update sessions list UI
+                // Clear previous messages and entities immediately
+                state.messages = [];
+                state.entities = [];
+                state.filteredEntities = [];
+
+                // Force re-render with empty state
+                const messagesContainer = document.getElementById('messagesContainer');
+                messagesContainer.innerHTML = '<div class="loading"><div class="loading-spinner"></div><p>Loading messages...</p></div>';
+                renderEntities();
+
+                // Update sessions list UI to show new active session
                 renderSessions();
+
+                // Show chat interface
+                showChatInterface();
 
                 // Load data for this session
                 await Promise.all([
                     loadMessages(),
                     loadEntities()
                 ]);
-
-                // Show chat interface
-                showChatInterface();
 
                 // Focus on input
                 document.getElementById('messageInput').focus();
@@ -1542,25 +1579,30 @@
             document.getElementById('emptyState').classList.add('hidden');
             document.getElementById('chatInterface').classList.remove('hidden');
 
-            const session = state.sessions.find(s => s.session_id === state.activeSession);
-            const name = session?.name || `Session ${state.activeSession.substring(0, 8)}`;
-            document.getElementById('sessionName').textContent = name;
+            // Update session name in header
+            if (state.activeSession) {
+                const session = state.sessions.find(s => s.session_id === state.activeSession);
+                const name = session?.name || `Session ${state.activeSession.substring(0, 8)}`;
+                document.getElementById('sessionName').textContent = name;
+            }
         }
 
         // Message Functions
         async function loadMessages() {
             if (!state.activeSession) {
+                console.log('No active session, clearing messages');
                 state.messages = [];
                 renderMessages();
                 return;
             }
 
-            const sessionId = state.activeSession; // Capture current session
+            const sessionId = state.activeSession; // Capture current session for consistency check
+            console.log('Loading messages for session:', sessionId);
 
             try {
                 const response = await fetch(`${API_BASE}/chatbot/messages?session_id=${sessionId}`);
 
-                // Check if session changed while loading
+                // CRITICAL: Check if session changed while loading
                 if (state.activeSession !== sessionId) {
                     console.log('Session changed during load, discarding old messages');
                     return;
@@ -1569,22 +1611,30 @@
                 if (!response.ok) {
                     if (response.status === 404) {
                         // New session, no messages yet
-                        state.messages = [];
-                        renderMessages();
+                        console.log('New session, no messages found');
+                        if (state.activeSession === sessionId) {
+                            state.messages = [];
+                            renderMessages();
+                        }
                         return;
                     }
                     throw new Error('Failed to load messages');
                 }
 
                 const data = await response.json();
+                console.log('Loaded messages:', data.messages?.length || 0);
 
-                // Double-check session didn't change
+                // Triple-check session didn't change before updating state
                 if (state.activeSession === sessionId) {
                     state.messages = data.messages || [];
                     renderMessages();
+                    console.log('Messages rendered for session:', sessionId);
+                } else {
+                    console.log('Session changed after load, not rendering');
                 }
             } catch (error) {
                 console.error('Failed to load messages:', error);
+                // Only update if we're still on the same session
                 if (state.activeSession === sessionId) {
                     state.messages = [];
                     renderMessages();
@@ -1595,12 +1645,18 @@
         function renderMessages() {
             const container = document.getElementById('messagesContainer');
 
+            // Always clear container first
+            container.innerHTML = '';
+
+            if (!state.activeSession) {
+                container.innerHTML = '<div class="empty-state"><h3>No session selected</h3><p>Select or create a session to start chatting</p></div>';
+                return;
+            }
+
             if (state.messages.length === 0) {
                 container.innerHTML = '<div class="empty-state"><h3>No messages yet</h3><p>Start a conversation!</p></div>';
                 return;
             }
-
-            container.innerHTML = '';
 
             state.messages.forEach(msg => {
                 const messageDiv = document.createElement('div');
@@ -1942,44 +1998,55 @@
         // Entity Functions
         async function loadEntities() {
             if (!state.activeSession) {
+                console.log('No active session, clearing entities');
                 state.entities = [];
                 state.filteredEntities = [];
                 renderEntities();
                 return;
             }
 
-            const userId = state.userId; // Capture current user
+            const userId = state.userId; // Capture current user for consistency check
+            const sessionId = state.activeSession; // Capture current session
+            console.log('Loading entities for user:', userId, 'session:', sessionId);
 
             try {
                 const response = await fetch(`${API_BASE}/entities/entities?user_id=${userId}`);
 
-                // Check if user changed while loading
-                if (state.userId !== userId) {
-                    console.log('User changed during load, discarding old entities');
+                // CRITICAL: Check if user or session changed while loading
+                if (state.userId !== userId || state.activeSession !== sessionId) {
+                    console.log('User or session changed during load, discarding old entities');
                     return;
                 }
 
                 if (!response.ok) {
                     if (response.status === 404 || response.status === 500) {
                         // No entities yet or session not found
-                        state.entities = [];
-                        state.filteredEntities = [];
-                        renderEntities();
+                        console.log('No entities found or error');
+                        if (state.userId === userId && state.activeSession === sessionId) {
+                            state.entities = [];
+                            state.filteredEntities = [];
+                            renderEntities();
+                        }
                         return;
                     }
                     throw new Error('Failed to load entities');
                 }
 
                 const data = await response.json();
+                console.log('Loaded entities:', data.entities?.length || 0);
 
-                // Double-check user didn't change
-                if (state.userId === userId) {
+                // Triple-check user and session didn't change before updating state
+                if (state.userId === userId && state.activeSession === sessionId) {
                     state.entities = data.entities || [];
                     filterEntities(state.entityFilter);
+                    console.log('Entities rendered for user:', userId);
+                } else {
+                    console.log('User or session changed after load, not rendering');
                 }
             } catch (error) {
                 console.error('Failed to load entities:', error);
-                if (state.userId === userId) {
+                // Only update if we're still on the same user and session
+                if (state.userId === userId && state.activeSession === sessionId) {
                     state.entities = [];
                     state.filteredEntities = [];
                     renderEntities();

@@ -1,5 +1,6 @@
 """Classification schemas for support ticket classification."""
 
+from typing import Optional
 from enum import Enum
 from pydantic import BaseModel, Field
 
@@ -40,10 +41,14 @@ class IntentType(str, Enum):
 
 
 class TicketClassification(BaseModel):
-    """Classification result for a support ticket."""
+    """Classification result for a support ticket.
     
-    category: TicketCategory = Field(..., description="The category of the support ticket")
+    Note: category is a string (not enum) to support dynamic categories from database.
+    """
+    
+    category: str = Field(..., description="The category of the support ticket (dynamic from database)")
     priority: TicketPriority = Field(..., description="The priority level of the ticket")
+    intent: Optional[str] = Field(None, description="The intent/action requested (e.g., task_creation, ask_question)")
     reasoning: str = Field(..., description="Brief explanation of the classification", max_length=500)
     confidence: float = Field(..., description="Confidence score (0-1)", ge=0.0, le=1.0)
 

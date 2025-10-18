@@ -1,0 +1,2031 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление Категориями - Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #1a202c;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 16px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tab {
+            background: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #718096;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565 0%, #c53030 100%);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .category-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card:hover {
+            border-color: #667eea;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.2);
+        }
+
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--category-color, #667eea);
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .category-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 5px;
+        }
+
+        .category-name {
+            font-size: 14px;
+            color: #a0aec0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .category-description {
+            color: #4a5568;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .category-stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            color: #718096;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .category-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-active {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .badge-inactive {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .badge-created {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        .category-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a202c;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #a0aec0;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .close-modal:hover {
+            color: #2d3748;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-input.error {
+            border-color: #f56565;
+        }
+
+        .form-help {
+            font-size: 12px;
+            color: #a0aec0;
+            margin-top: 5px;
+        }
+
+        .form-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .form-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .color-picker-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .color-picker {
+            width: 60px;
+            height: 40px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #a0aec0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .alert-error {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .intents-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .intent-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .intent-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.1);
+        }
+
+        .intent-examples {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .example-tag {
+            background: #edf2f7;
+            color: #4a5568;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #a0aec0;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            gap: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-link">← Назад в чат</a>
+            <h1>🎛️ Панель Администратора</h1>
+            <p>Управление категориями и намерениями для классификации</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('categories')">
+                📁 Категории
+            </button>
+            <button class="tab" onclick="switchTab('intents')">
+                🎯 Намерения
+            </button>
+            <button class="tab" onclick="switchTab('agents')">
+                🤖 Агенты
+            </button>
+            <button class="tab" onclick="switchTab('tasks')">
+                ✅ Задачи
+            </button>
+        </div>
+
+        <div class="content">
+            <!-- Categories Tab -->
+            <div id="categories-tab" class="tab-content active">
+                <div class="action-bar">
+                    <h2 style="font-size: 24px; color: #1a202c;">Категории</h2>
+                    <button class="btn" onclick="openCreateCategoryModal()">
+                        ➕ Создать категорию
+                    </button>
+                </div>
+
+                <div id="categories-container">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Загрузка категорий...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intents Tab -->
+            <div id="intents-tab" class="tab-content">
+                <div class="action-bar">
+                    <h2 style="font-size: 24px; color: #1a202c;">Намерения</h2>
+                    <button class="btn" onclick="openCreateIntentModal()">
+                        ➕ Создать намерение
+                    </button>
+                </div>
+
+                <div id="intents-container">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Загрузка намерений...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agents Tab -->
+            <div id="agents-tab" class="tab-content">
+                <div class="action-bar">
+                    <h2 style="font-size: 24px; color: #1a202c;">🤖 Агенты</h2>
+                    <button class="btn" onclick="openCreateAgentModal()">
+                        ➕ Создать агента
+                    </button>
+                </div>
+
+                <div id="agents-container">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Загрузка агентов...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tasks Tab -->
+            <div id="tasks-tab" class="tab-content">
+                <div class="action-bar">
+                    <h2 style="font-size: 24px; color: #1a202c;">✅ Задачи</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <select class="form-input" id="taskStatusFilter" onchange="loadTasks()" style="width: 150px;">
+                            <option value="">Все статусы</option>
+                            <option value="pending">Ожидает</option>
+                            <option value="in_progress">В работе</option>
+                            <option value="completed">Завершена</option>
+                            <option value="cancelled">Отменена</option>
+                        </select>
+                        <select class="form-input" id="taskCategoryFilter" onchange="loadTasks()" style="width: 150px;">
+                            <option value="">Все категории</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="tasks-container">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Загрузка задач...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Category Modal -->
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="categoryModalTitle">Создать категорию</h3>
+                <button class="close-modal" onclick="closeCategoryModal()">×</button>
+            </div>
+            <form id="categoryForm">
+                <div class="form-group">
+                    <label class="form-label">Внутреннее имя *</label>
+                    <input type="text" class="form-input" id="categoryName" required placeholder="hr"
+                        pattern="[a-z_]+" />
+                    <div class="form-help">Только строчные буквы и подчеркивание (например: hr, it, finance)</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Отображаемое имя *</label>
+                    <input type="text" class="form-input" id="categoryDisplayName" required
+                        placeholder="Human Resources" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Описание *</label>
+                    <textarea class="form-input" id="categoryDescription" required
+                        placeholder="Вопросы по кадрам, отпускам, документам..." rows="2"></textarea>
+                </div>
+
+                <h3 style="color: #1a202c; margin: 20px 0 15px; font-size: 18px;">Настройка промпта для классификатора
+                </h3>
+
+                <div class="form-group">
+                    <label class="form-label">О чём (детальное описание)</label>
+                    <textarea class="form-input" id="categoryAboutText"
+                        placeholder="трудовые отношения и персонал — оформление/изменение условий, отпуска/командировки, справки для сотрудника..."
+                        rows="3"></textarea>
+                    <div class="form-help">Подробное описание того, что входит в эту категорию</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Частые интенты</label>
+                    <textarea class="form-input" id="categoryCommonIntents"
+                        placeholder="согласовать/оформить/изменить; предоставить справку; открыть доступ..."
+                        rows="3"></textarea>
+                    <div class="form-help">Что чаще всего хотят сделать пользователи</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Ключевые маркеры</label>
+                    <textarea class="form-input" id="categoryKeyMarkers"
+                        placeholder="«отпуск», «приказ», «ЛК сотрудника», «ДМС/льготы»..." rows="3"></textarea>
+                    <div class="form-help">Слова и фразы для определения этой категории</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Примеры запросов</label>
+                    <textarea class="form-input" id="categoryExampleQueries"
+                        placeholder="оформить отпуск, справка 2-НДФЛ, доступ к ЛК сотрудника..." rows="3"></textarea>
+                    <div class="form-help">Примеры типичных сообщений пользователей</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Пограничные случаи</label>
+                    <textarea class="form-input" id="categoryBorderCases"
+                        placeholder="Справка для сотрудника → hr; финансовые справки → finance..." rows="2"></textarea>
+                    <div class="form-help">Как отличать эту категорию от других</div>
+                </div>
+
+                <h3 style="color: #1a202c; margin: 20px 0 15px; font-size: 18px;">Настройки векторной коллекции</h3>
+
+                <div class="form-group">
+                    <label class="form-label">Модель эмбеддинга</label>
+                    <select class="form-input" id="categoryEmbeddingModel">
+                        <option value="text-embedding-3-small">text-embedding-3-small (1536)</option>
+                        <option value="text-embedding-3-large">text-embedding-3-large (3072)</option>
+                        <option value="text-embedding-ada-002">text-embedding-ada-002 (1536)</option>
+                    </select>
+                    <div class="form-help">Модель OpenAI для создания векторных представлений</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Размерность векторов</label>
+                    <input type="number" class="form-input" id="categoryEmbeddingDimension" value="1536" min="1"
+                        max="8000" />
+                    <div class="form-help">Размер вектора эмбеддинга (должен соответствовать модели)</div>
+                </div>
+
+                <div class="form-group" id="createCollectionGroup">
+                    <label class="form-checkbox">
+                        <input type="checkbox" id="createCollection" checked />
+                        <span>Автоматически создать векторную коллекцию в Qdrant</span>
+                    </label>
+                    <div class="form-help">Коллекция будет создана с указанными настройками эмбеддинга</div>
+                </div>
+
+                <h3 style="color: #1a202c; margin: 20px 0 15px; font-size: 18px;">Настройки UI</h3>
+
+                <div class="form-group">
+                    <label class="form-label">Цвет</label>
+                    <div class="color-picker-container">
+                        <input type="color" class="color-picker" id="categoryColor" value="#667eea" />
+                        <span id="colorValue">#667eea</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Иконка</label>
+                    <input type="text" class="form-input" id="categoryIcon" placeholder="users" />
+                    <div class="form-help">Название иконки (например: users, cpu, dollar-sign)</div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 30px;">
+                    <button type="submit" class="btn" style="flex: 1;">
+                        💾 Сохранить
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeCategoryModal()">
+                        Отмена
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create/Edit Intent Modal -->
+    <div id="intentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="intentModalTitle">Создать намерение</h3>
+                <button class="close-modal" onclick="closeIntentModal()">×</button>
+            </div>
+            <form id="intentForm">
+                <div class="form-group">
+                    <label class="form-label">Внутреннее имя *</label>
+                    <input type="text" class="form-input" id="intentName" required placeholder="ask_question"
+                        pattern="[a-z_]+" />
+                    <div class="form-help">Только строчные буквы и подчеркивание</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Отображаемое имя *</label>
+                    <input type="text" class="form-input" id="intentDisplayName" required placeholder="Ask Question" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Описание *</label>
+                    <textarea class="form-input" id="intentDescription" required
+                        placeholder="User wants to ask a question..." rows="2"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Категория</label>
+                    <select class="form-input" id="intentCategory">
+                        <option value="">Без категории</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Примеры фраз</label>
+                    <textarea class="form-input" id="intentExamples"
+                        placeholder="Каждый пример на новой строке&#10;Как мне...?&#10;Подскажите пожалуйста..."
+                        rows="4"></textarea>
+                    <div class="form-help">Каждый пример на новой строке</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Приоритет</label>
+                    <select class="form-input" id="intentPriority">
+                        <option value="low">Низкий</option>
+                        <option value="normal" selected>Нормальный</option>
+                        <option value="high">Высокий</option>
+                        <option value="urgent">Срочный</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 30px;">
+                    <button type="submit" class="btn" style="flex: 1;">
+                        💾 Сохранить
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeIntentModal()">
+                        Отмена
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create/Edit Agent Modal -->
+    <div id="agentModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="agentModalTitle">Создать агента</h3>
+                <button class="close-modal" onclick="closeAgentModal()">×</button>
+            </div>
+            <form id="agentForm">
+                <div class="form-group">
+                    <label class="form-label">Внутреннее имя *</label>
+                    <input type="text" class="form-input" id="agentName" required placeholder="hr_specialist"
+                        pattern="[a-z_]+" />
+                    <div class="form-help">Только строчные буквы и подчеркивание</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Отображаемое имя *</label>
+                    <input type="text" class="form-input" id="agentDisplayName" required placeholder="HR Специалист" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Описание *</label>
+                    <textarea class="form-input" id="agentDescription" required placeholder="Помогает с HR вопросами..."
+                        rows="2"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Тип агента *</label>
+                    <select class="form-input" id="agentType" required>
+                        <option value="rag">RAG (работа с документами)</option>
+                        <option value="react">ReAct (агент с инструментами)</option>
+                        <option value="classifier">Классификатор</option>
+                        <option value="custom">Кастомный</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Когда вызывать *</label>
+                    <select class="form-input" id="agentTriggerType" required onchange="updateTriggerValueField()">
+                        <option value="category">По категории</option>
+                        <option value="intent">По намерению</option>
+                        <option value="keyword">По ключевым словам</option>
+                        <option value="priority">По приоритету</option>
+                        <option value="always">Всегда</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="triggerValueGroup">
+                    <label class="form-label">Значение триггера *</label>
+                    <input type="text" class="form-input" id="agentTriggerValue"
+                        placeholder='{"categories": ["hr", "it"]}' />
+                    <div class="form-help" id="triggerValueHelp">JSON формат: {"categories": ["hr"]}</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">System Prompt *</label>
+                    <textarea class="form-input" id="agentSystemPrompt" required placeholder="Ты эксперт..."
+                        rows="8"></textarea>
+                    <div class="form-help">Инструкции для агента (можно многострочный)</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Модель LLM</label>
+                    <select class="form-input" id="agentModel">
+                        <option value="openai/gpt-oss-120b" selected>GPT OSS 120B (быстрая)</option>
+                        <option value="openai/gpt-4">GPT-4 (мощная)</option>
+                        <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option>
+                        <option value="meta/llama-3-70b">Llama 3 70B</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Температура: <span id="tempValue">0.7</span></label>
+                    <input type="range" class="form-input" id="agentTemperature" min="0" max="2" step="0.1" value="0.7"
+                        oninput="document.getElementById('tempValue').textContent = this.value" style="height: 40px;" />
+                    <div class="form-help">0 = детерминированный, 2 = креативный</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Max Tokens</label>
+                    <input type="number" class="form-input" id="agentMaxTokens" value="2000" min="100" max="32000" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Приоритет</label>
+                    <input type="number" class="form-input" id="agentPriority" value="100" min="0" max="1000" />
+                    <div class="form-help">Выше = вызывается раньше при совпадении триггеров</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-checkbox">
+                        <input type="checkbox" id="agentIsActive" checked />
+                        <span>Активен</span>
+                    </label>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 30px;">
+                    <button type="submit" class="btn" style="flex: 1;">
+                        💾 Сохранить
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeAgentModal()">
+                        Отмена
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api/v1/admin';
+        let currentCategories = [];
+        let currentIntents = [];
+        let currentAgents = [];
+        let currentTasks = [];
+        let editingCategoryId = null;  // Track category being edited
+        let editingIntentId = null;  // Track intent being edited
+        let editingAgentId = null;  // Track agent being edited
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load categories first, then intents (which depend on categories)
+            await loadCategories();
+            loadIntents();
+            loadAgents();
+            loadTasks();
+            setupColorPicker();
+            setupForms();
+            updateTaskCategoryFilter();
+        });
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+
+        // Load categories
+        async function loadCategories() {
+            try {
+                const response = await fetch(`${API_BASE}/categories`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                // Validate response format
+                if (!data || !Array.isArray(data.categories)) {
+                    console.error('Invalid categories response:', data);
+                    currentCategories = [];
+                    renderCategories([]);
+                    return;
+                }
+
+                currentCategories = data.categories;
+                renderCategories(data.categories);
+            } catch (error) {
+                console.error('Failed to load categories:', error);
+                showError('Ошибка загрузки категорий: ' + error.message);
+                currentCategories = [];
+                renderCategories([]);
+            }
+        }
+
+        // Render categories
+        function renderCategories(categories) {
+            const container = document.getElementById('categories-container');
+
+            if (categories.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📁</div>
+                        <h3>Нет категорий</h3>
+                        <p>Создайте первую категорию для начала работы</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="categories-grid">
+                    ${categories.map(cat => `
+                        <div class="category-card" style="--category-color: ${cat.color || '#667eea'}">
+                            <div class="category-header">
+                                <div>
+                                    <div class="category-title">${cat.display_name}</div>
+                                    <div class="category-name">${cat.name}</div>
+                                </div>
+                                <div>
+                                    ${cat.is_active ?
+                    '<span class="category-badge badge-active">✓ Активна</span>' :
+                    '<span class="category-badge badge-inactive">✗ Неактивна</span>'}
+                                </div>
+                            </div>
+                            
+                            <div class="category-description">${cat.description}</div>
+                            
+                            <div class="category-stats">
+                                <div class="stat">
+                                    🎯 <span class="stat-value">${cat.intents_count}</span> намерений
+                                </div>
+                                <div class="stat">
+                                    📄 <span class="stat-value">${cat.documents_count}</span> документов
+                                </div>
+                            </div>
+                            
+                            ${cat.collection_created ?
+                    `<div class="category-badge badge-created">✓ Коллекция создана (${cat.embedding_model} - ${cat.embedding_dimension}d)</div>` :
+                    '<div class="category-badge badge-inactive">⚠️ Коллекция не создана</div>'}
+                            
+                            <div class="category-actions">
+                                <button class="btn btn-small" onclick="editCategory(${cat.id})">
+                                    ✏️ Редактировать
+                                </button>
+                                ${!cat.collection_created ? `
+                                <button class="btn btn-small" onclick="createCollectionForCategory(${cat.id})">
+                                    🔧 Создать коллекцию
+                                </button>
+                                ` : `
+                                <button class="btn btn-small btn-secondary" 
+                                        onclick="uploadToCategory('${cat.collection_name}')">
+                                    📤 Загрузить документы
+                                </button>
+                                `}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Load intents
+        async function loadIntents() {
+            try {
+                const response = await fetch(`${API_BASE}/intents`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                // Validate response format
+                if (!data || !Array.isArray(data.intents)) {
+                    console.error('Invalid intents response:', data);
+                    currentIntents = [];
+                    renderIntents([]);
+                    updateIntentCategorySelect();
+                    return;
+                }
+
+                currentIntents = data.intents;
+                renderIntents(data.intents);
+                updateIntentCategorySelect();
+            } catch (error) {
+                console.error('Failed to load intents:', error);
+                showError('Ошибка загрузки намерений: ' + error.message);
+                currentIntents = [];
+                renderIntents([]);
+            }
+        }
+
+        // Render intents
+        function renderIntents(intents) {
+            const container = document.getElementById('intents-container');
+
+            if (intents.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎯</div>
+                        <h3>Нет намерений</h3>
+                        <p>Создайте первое намерение для классификации запросов</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="intents-list">
+                    ${intents.map(intent => `
+                        <div class="intent-card">
+                            <div class="category-header">
+                                <div>
+                                    <div class="category-title">${intent.display_name}</div>
+                                    <div class="category-name">${intent.name}</div>
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    ${intent.category_name ?
+                    `<span class="category-badge badge-created">📁 ${intent.category_name}</span>` :
+                    ''}
+                                    ${intent.is_active ?
+                    '<span class="category-badge badge-active">✓ Активно</span>' :
+                    '<span class="category-badge badge-inactive">✗ Неактивно</span>'}
+                                </div>
+                            </div>
+                            
+                            <div class="category-description">${intent.description}</div>
+                            
+                            ${intent.examples.length > 0 ? `
+                                <div class="intent-examples">
+                                    ${intent.examples.map(ex => `
+                                        <span class="example-tag">💬 ${ex}</span>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                            
+                            <div class="category-actions" style="margin-top: 15px;">
+                                <button class="btn btn-small" onclick="editIntent(${intent.id})">
+                                    ✏️ Редактировать
+                                </button>
+                                <button class="btn btn-small btn-danger" onclick="deleteIntent(${intent.id})">
+                                    🗑️ Удалить
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Modal functions
+        function openCreateCategoryModal() {
+            editingCategoryId = null;  // Reset editing mode
+            document.getElementById('categoryModalTitle').textContent = 'Создать категорию';
+            document.getElementById('categoryForm').reset();
+            document.getElementById('categoryName').disabled = false;  // Enable name field for creation
+            document.getElementById('createCollectionGroup').style.display = 'block';  // Show collection option
+            document.getElementById('categoryModal').classList.add('active');
+        }
+
+        function closeCategoryModal() {
+            document.getElementById('categoryModal').classList.remove('active');
+            editingCategoryId = null;  // Reset editing mode
+            document.getElementById('categoryName').disabled = false;  // Re-enable name field
+            document.getElementById('createCollection').disabled = false;  // Re-enable collection checkbox
+        }
+
+        function openCreateIntentModal() {
+            editingIntentId = null;  // Reset editing mode
+            document.getElementById('intentModalTitle').textContent = 'Создать намерение';
+            document.getElementById('intentForm').reset();
+            document.getElementById('intentName').disabled = false;  // Enable name field for creation
+            document.getElementById('intentModal').classList.add('active');
+        }
+
+        function closeIntentModal() {
+            document.getElementById('intentModal').classList.remove('active');
+            editingIntentId = null;  // Reset editing mode
+            document.getElementById('intentName').disabled = false;  // Re-enable name field
+        }
+
+        // Color picker and embedding model change handler
+        function setupColorPicker() {
+            const colorInput = document.getElementById('categoryColor');
+            const colorValue = document.getElementById('colorValue');
+
+            colorInput.addEventListener('input', (e) => {
+                colorValue.textContent = e.target.value;
+            });
+
+            // Auto-update dimension when model changes
+            const embeddingModel = document.getElementById('categoryEmbeddingModel');
+            const embeddingDimension = document.getElementById('categoryEmbeddingDimension');
+
+            embeddingModel.addEventListener('change', (e) => {
+                const dimensionMap = {
+                    'text-embedding-3-small': 1536,
+                    'text-embedding-3-large': 3072,
+                    'text-embedding-ada-002': 1536
+                };
+                embeddingDimension.value = dimensionMap[e.target.value] || 1536;
+            });
+        }
+
+        // Form submissions
+        function setupForms() {
+            document.getElementById('categoryForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                // Build data object (different for create vs update)
+                let data;
+                let url;
+                let method;
+                let successMessage;
+
+                if (editingCategoryId) {
+                    // UPDATE mode - only send changed fields
+                    data = {
+                        display_name: document.getElementById('categoryDisplayName').value,
+                        description: document.getElementById('categoryDescription').value,
+                        about_text: document.getElementById('categoryAboutText').value || null,
+                        common_intents: document.getElementById('categoryCommonIntents').value || null,
+                        key_markers: document.getElementById('categoryKeyMarkers').value || null,
+                        example_queries: document.getElementById('categoryExampleQueries').value || null,
+                        border_cases: document.getElementById('categoryBorderCases').value || null,
+                        embedding_model: document.getElementById('categoryEmbeddingModel').value,
+                        embedding_dimension: parseInt(document.getElementById('categoryEmbeddingDimension').value),
+                        color: document.getElementById('categoryColor').value,
+                        icon: document.getElementById('categoryIcon').value || null,
+                    };
+                    url = `${API_BASE}/categories/${editingCategoryId}`;
+                    method = 'PATCH';
+                    successMessage = 'Категория успешно обновлена!';
+                } else {
+                    // CREATE mode - send all fields including name
+                    data = {
+                        name: document.getElementById('categoryName').value,
+                        display_name: document.getElementById('categoryDisplayName').value,
+                        description: document.getElementById('categoryDescription').value,
+                        about_text: document.getElementById('categoryAboutText').value || null,
+                        common_intents: document.getElementById('categoryCommonIntents').value || null,
+                        key_markers: document.getElementById('categoryKeyMarkers').value || null,
+                        example_queries: document.getElementById('categoryExampleQueries').value || null,
+                        border_cases: document.getElementById('categoryBorderCases').value || null,
+                        embedding_model: document.getElementById('categoryEmbeddingModel').value,
+                        embedding_dimension: parseInt(document.getElementById('categoryEmbeddingDimension').value),
+                        color: document.getElementById('categoryColor').value,
+                        icon: document.getElementById('categoryIcon').value || null,
+                        create_collection: document.getElementById('createCollection').checked
+                    };
+                    url = `${API_BASE}/categories`;
+                    method = 'POST';
+                    successMessage = 'Категория успешно создана!';
+                }
+
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || `Ошибка ${editingCategoryId ? 'обновления' : 'создания'} категории`);
+                    }
+
+                    showSuccess(successMessage);
+                    closeCategoryModal();
+                    loadCategories();
+                    editingCategoryId = null;  // Reset editing mode
+                } catch (error) {
+                    showError(error.message);
+                }
+            });
+
+            document.getElementById('intentForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const examples = document.getElementById('intentExamples').value
+                    .split('\n')
+                    .map(ex => ex.trim())
+                    .filter(ex => ex.length > 0);
+
+                const categoryId = document.getElementById('intentCategory').value;
+
+                // Build data object (different for create vs update)
+                let data;
+                let url;
+                let method;
+                let successMessage;
+
+                if (editingIntentId) {
+                    // UPDATE mode - only send changed fields
+                    data = {
+                        display_name: document.getElementById('intentDisplayName').value,
+                        description: document.getElementById('intentDescription').value,
+                        category_id: categoryId ? parseInt(categoryId) : null,
+                        examples: examples,
+                        priority: document.getElementById('intentPriority').value
+                    };
+                    url = `${API_BASE}/intents/${editingIntentId}`;
+                    method = 'PATCH';
+                    successMessage = 'Намерение успешно обновлено!';
+                } else {
+                    // CREATE mode - send all fields including name
+                    data = {
+                        name: document.getElementById('intentName').value,
+                        display_name: document.getElementById('intentDisplayName').value,
+                        description: document.getElementById('intentDescription').value,
+                        category_id: categoryId ? parseInt(categoryId) : null,
+                        examples: examples,
+                        priority: document.getElementById('intentPriority').value
+                    };
+                    url = `${API_BASE}/intents`;
+                    method = 'POST';
+                    successMessage = 'Намерение успешно создано!';
+                }
+
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || `Ошибка ${editingIntentId ? 'обновления' : 'создания'} намерения`);
+                    }
+
+                    showSuccess(successMessage);
+                    closeIntentModal();
+                    loadIntents();
+                    editingIntentId = null;  // Reset editing mode
+                } catch (error) {
+                    showError(error.message);
+                }
+            });
+        }
+
+        // Update intent category select
+        function updateIntentCategorySelect() {
+            const select = document.getElementById('intentCategory');
+
+            // Check if categories are loaded
+            if (!currentCategories || !Array.isArray(currentCategories)) {
+                select.innerHTML = '<option value="">Без категории</option>';
+                return;
+            }
+
+            select.innerHTML = '<option value="">Без категории</option>' +
+                currentCategories
+                    .filter(cat => cat.is_active)
+                    .map(cat => `<option value="${cat.id}">${cat.display_name}</option>`)
+                    .join('');
+        }
+
+        // Helper functions
+        function uploadToCategory(collectionName) {
+            alert(`Перейдите в раздел "Документы" и выберите коллекцию: ${collectionName}`);
+            // Или можно перенаправить на index.html с параметром
+            // window.location.href = `index.html?collection=${collectionName}`;
+        }
+
+        async function createCollectionForCategory(categoryId) {
+            if (!confirm('Создать векторную коллекцию для этой категории?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/categories/${categoryId}/create-collection`, {
+                    method: 'POST'
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Ошибка создания коллекции');
+                }
+
+                const result = await response.json();
+                showSuccess(`Коллекция "${result.collection_name}" успешно создана! (размерность: ${result.embedding_size})`);
+                loadCategories();
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function editCategory(id) {
+            // Find category in current list
+            const category = currentCategories.find(cat => cat.id === id);
+
+            if (!category) {
+                showError('Категория не найдена');
+                return;
+            }
+
+            // Set editing mode
+            editingCategoryId = id;
+
+            // Update modal title
+            document.getElementById('categoryModalTitle').textContent = 'Редактировать категорию';
+
+            // Fill form with category data
+            document.getElementById('categoryName').value = category.name;
+            document.getElementById('categoryName').disabled = true;  // Can't change internal name
+            document.getElementById('categoryDisplayName').value = category.display_name;
+            document.getElementById('categoryDescription').value = category.description;
+
+            // Fill prompt customization fields
+            document.getElementById('categoryAboutText').value = category.about_text || '';
+            document.getElementById('categoryCommonIntents').value = category.common_intents || '';
+            document.getElementById('categoryKeyMarkers').value = category.key_markers || '';
+            document.getElementById('categoryExampleQueries').value = category.example_queries || '';
+            document.getElementById('categoryBorderCases').value = category.border_cases || '';
+
+            // Fill embedding settings
+            document.getElementById('categoryEmbeddingModel').value = category.embedding_model || 'text-embedding-3-small';
+            document.getElementById('categoryEmbeddingDimension').value = category.embedding_dimension || 1536;
+
+            // Fill UI fields
+            document.getElementById('categoryColor').value = category.color || '#667eea';
+            document.getElementById('colorValue').textContent = category.color || '#667eea';
+            document.getElementById('categoryIcon').value = category.icon || '';
+
+            // Hide collection creation option when editing
+            document.getElementById('createCollectionGroup').style.display = 'none';
+
+            // Open modal
+            document.getElementById('categoryModal').classList.add('active');
+        }
+
+        async function editIntent(id) {
+            // Find intent in current list
+            const intent = currentIntents.find(i => i.id === id);
+
+            if (!intent) {
+                showError('Намерение не найдено');
+                return;
+            }
+
+            // Set editing mode
+            editingIntentId = id;
+
+            // Update modal title
+            document.getElementById('intentModalTitle').textContent = 'Редактировать намерение';
+
+            // Fill form with intent data
+            document.getElementById('intentName').value = intent.name;
+            document.getElementById('intentName').disabled = true;  // Can't change internal name
+            document.getElementById('intentDisplayName').value = intent.display_name;
+            document.getElementById('intentDescription').value = intent.description;
+
+            // Set category
+            document.getElementById('intentCategory').value = intent.category_id || '';
+
+            // Set examples (join array with newlines)
+            document.getElementById('intentExamples').value = intent.examples.join('\n');
+
+            // Set priority
+            document.getElementById('intentPriority').value = intent.priority || 'medium';
+
+            // Open modal
+            document.getElementById('intentModal').classList.add('active');
+        }
+
+        async function deleteIntent(id) {
+            if (!confirm('Вы уверены, что хотите удалить это намерение?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/intents/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) throw new Error('Ошибка удаления');
+
+                showSuccess('Намерение удалено');
+                loadIntents();
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function showSuccess(message) {
+            // Simple alert for now, можно заменить на toast notifications
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success';
+            alert.textContent = '✓ ' + message;
+            alert.style.position = 'fixed';
+            alert.style.top = '20px';
+            alert.style.right = '20px';
+            alert.style.zIndex = '10000';
+            document.body.appendChild(alert);
+            setTimeout(() => alert.remove(), 3000);
+        }
+
+        function showError(message) {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-error';
+            alert.textContent = '✗ ' + message;
+            alert.style.position = 'fixed';
+            alert.style.top = '20px';
+            alert.style.right = '20px';
+            alert.style.zIndex = '10000';
+            document.body.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        // ========== AGENTS FUNCTIONS ==========
+
+        async function loadAgents() {
+            try {
+                const response = await fetch(`${API_BASE}/agents`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                // Validate response format
+                if (!data || !Array.isArray(data.agents)) {
+                    console.error('Invalid agents response:', data);
+                    currentAgents = [];
+                    renderAgents([]);
+                    return;
+                }
+
+                currentAgents = data.agents;
+                renderAgents(data.agents);
+            } catch (error) {
+                console.error('Failed to load agents:', error);
+                showError('Ошибка загрузки агентов: ' + error.message);
+                currentAgents = [];
+                renderAgents([]);
+            }
+        }
+
+        function renderAgents(agents) {
+            const container = document.getElementById('agents-container');
+
+            if (agents.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🤖</div>
+                        <h3>Нет агентов</h3>
+                        <p>Создайте первого агента для обработки запросов</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="intents-list">
+                    ${agents.map(agent => `
+                        <div class="intent-card">
+                            <div class="category-header">
+                                <div>
+                                    <div class="category-title">🤖 ${agent.display_name}</div>
+                                    <div class="category-name">${agent.name}</div>
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <span class="category-badge badge-created">${getAgentTypeIcon(agent.agent_type)} ${agent.agent_type.toUpperCase()}</span>
+                                    ${agent.is_active ?
+                    '<span class="category-badge badge-active">✓ Активен</span>' :
+                    '<span class="category-badge badge-inactive">✗ Неактивен</span>'}
+                                </div>
+                            </div>
+                            
+                            <div class="category-description">${agent.description || ''}</div>
+                            
+                            <div class="category-stats">
+                                <div class="stat">
+                                    🎯 <span class="stat-value">${agent.trigger_type}</span>: ${formatTriggerValue(agent.trigger_value)}
+                                </div>
+                                <div class="stat">
+                                    📊 <span class="stat-value">${agent.total_invocations}</span> вызовов
+                                </div>
+                                <div class="stat">
+                                    🎲 Приоритет: <span class="stat-value">${agent.priority}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="category-stats" style="margin-top: 10px;">
+                                <div class="stat">
+                                    🤖 Модель: <span class="stat-value">${agent.model}</span>
+                                </div>
+                                <div class="stat">
+                                    🌡️ Temp: <span class="stat-value">${agent.temperature}</span>
+                                </div>
+                                <div class="stat">
+                                    📝 Max: <span class="stat-value">${agent.max_tokens}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="category-actions" style="margin-top: 15px;">
+                                <button class="btn btn-small" onclick="testAgent(${agent.id})">
+                                    🧪 Протестировать
+                                </button>
+                                <button class="btn btn-small" onclick="viewAgentStats(${agent.id})">
+                                    📊 Статистика
+                                </button>
+                                <button class="btn btn-small btn-secondary" onclick="editAgent(${agent.id})">
+                                    ✏️ Редактировать
+                                </button>
+                                <button class="btn btn-small btn-danger" onclick="deleteAgent(${agent.id})">
+                                    🗑️ Удалить
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function getAgentTypeIcon(type) {
+            const icons = {
+                'rag': '📚',
+                'react': '⚡',
+                'classifier': '🏷️',
+                'custom': '🔧'
+            };
+            return icons[type] || '🤖';
+        }
+
+        function formatTriggerValue(value) {
+            try {
+                if (!value || Object.keys(value).length === 0) return 'не указано';
+
+                if (value.categories) return value.categories.join(', ');
+                if (value.intents) return value.intents.join(', ');
+                if (value.keywords) return value.keywords.slice(0, 3).join(', ') + (value.keywords.length > 3 ? '...' : '');
+                if (value.priorities) return value.priorities.join(', ');
+
+                return JSON.stringify(value).substring(0, 50);
+            } catch {
+                return 'ошибка';
+            }
+        }
+
+        function openCreateAgentModal() {
+            editingAgentId = null;  // Reset editing mode
+            document.getElementById('agentModalTitle').textContent = 'Создать агента';
+            document.getElementById('agentForm').reset();
+            document.getElementById('agentName').disabled = false;  // Enable name field for creation
+            document.getElementById('agentModal').classList.add('active');
+        }
+
+        function closeAgentModal() {
+            document.getElementById('agentModal').classList.remove('active');
+            editingAgentId = null;  // Reset editing mode
+            document.getElementById('agentName').disabled = false;  // Re-enable name field
+        }
+
+        function updateTriggerValueField() {
+            const triggerType = document.getElementById('agentTriggerType').value;
+            const valueInput = document.getElementById('agentTriggerValue');
+            const helpText = document.getElementById('triggerValueHelp');
+            const valueGroup = document.getElementById('triggerValueGroup');
+
+            if (triggerType === 'always') {
+                valueGroup.style.display = 'none';
+                return;
+            }
+
+            valueGroup.style.display = 'block';
+
+            const examples = {
+                'category': '{"categories": ["hr", "it"]}',
+                'intent': '{"intents": ["access_request", "information_request"]}',
+                'keyword': '{"keywords": ["срочно", "критично"], "mode": "any"}',
+                'priority': '{"priorities": ["urgent", "high"]}'
+            };
+
+            valueInput.placeholder = examples[triggerType] || '{}';
+            helpText.textContent = `JSON формат: ${examples[triggerType] || '{}'}`;
+        }
+
+        async function testAgent(agentId) {
+            const message = prompt('Введите тестовое сообщение:');
+            if (!message) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/agents/${agentId}/test`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: message,
+                        category: 'hr',  // Can be customized
+                        intent: 'access_request'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.triggered) {
+                    alert(`✅ Агент сработал!\n\nОтвет: ${result.response || 'нет ответа'}\n\nВремя: ${result.execution_time_ms}ms\n\nОшибка: ${result.error || 'нет'}`);
+                } else {
+                    alert('❌ Агент не сработал для этого контекста');
+                }
+            } catch (error) {
+                showError('Ошибка теста: ' + error.message);
+            }
+        }
+
+        async function viewAgentStats(agentId) {
+            try {
+                const response = await fetch(`${API_BASE}/agents/${agentId}/stats`);
+                const stats = await response.json();
+
+                alert(`📊 Статистика агента "${stats.agent_name}"\n\n` +
+                    `Всего вызовов: ${stats.total_invocations}\n` +
+                    `Успешных: ${stats.success_count}\n` +
+                    `Ошибок: ${stats.error_count}\n` +
+                    `Средняя уверенность: ${stats.avg_confidence ? (stats.avg_confidence * 100).toFixed(1) + '%' : 'н/д'}\n` +
+                    `Среднее время: ${stats.avg_execution_time_ms ? stats.avg_execution_time_ms.toFixed(0) + 'ms' : 'н/д'}\n` +
+                    `Последний вызов: ${stats.last_invoked_at ? new Date(stats.last_invoked_at).toLocaleString() : 'никогда'}`
+                );
+            } catch (error) {
+                showError('Ошибка получения статистики: ' + error.message);
+            }
+        }
+
+        async function editAgent(agentId) {
+            // Find agent in current list
+            const agent = currentAgents.find(a => a.id === agentId);
+
+            if (!agent) {
+                showError('Агент не найден');
+                return;
+            }
+
+            // Set editing mode
+            editingAgentId = agentId;
+
+            // Update modal title
+            document.getElementById('agentModalTitle').textContent = 'Редактировать агента';
+
+            // Fill form with agent data
+            document.getElementById('agentName').value = agent.name;
+            document.getElementById('agentName').disabled = true;  // Can't change internal name
+            document.getElementById('agentDisplayName').value = agent.display_name;
+            document.getElementById('agentDescription').value = agent.description || '';
+
+            // Set agent type
+            document.getElementById('agentType').value = agent.agent_type;
+
+            // Set trigger type
+            document.getElementById('agentTriggerType').value = agent.trigger_type;
+            updateTriggerValueField();  // Update the trigger value field UI
+
+            // Set trigger value (convert object to JSON string)
+            if (agent.trigger_type !== 'always' && agent.trigger_value) {
+                document.getElementById('agentTriggerValue').value = JSON.stringify(agent.trigger_value);
+            }
+
+            // Set system prompt
+            document.getElementById('agentSystemPrompt').value = agent.system_prompt || '';
+
+            // Set model
+            document.getElementById('agentModel').value = agent.model || 'openai/gpt-oss-120b';
+
+            // Set temperature
+            document.getElementById('agentTemperature').value = agent.temperature || 0.7;
+            document.getElementById('tempValue').textContent = agent.temperature || 0.7;
+
+            // Set max tokens
+            document.getElementById('agentMaxTokens').value = agent.max_tokens || 2000;
+
+            // Set priority
+            document.getElementById('agentPriority').value = agent.priority || 100;
+
+            // Set is_active
+            document.getElementById('agentIsActive').checked = agent.is_active !== false;
+
+            // Open modal
+            document.getElementById('agentModal').classList.add('active');
+        }
+
+        async function deleteAgent(agentId) {
+            if (!confirm('Вы уверены, что хотите удалить этого агента?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/agents/${agentId}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) throw new Error('Ошибка удаления');
+
+                showSuccess('Агент удален');
+                loadAgents();
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        // Add agent form submission to setupForms
+        const originalSetupForms = setupForms;
+        setupForms = function () {
+            originalSetupForms();
+
+            document.getElementById('agentForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                let triggerValue = {};
+                if (document.getElementById('agentTriggerType').value !== 'always') {
+                    try {
+                        triggerValue = JSON.parse(document.getElementById('agentTriggerValue').value || '{}');
+                    } catch (err) {
+                        showError('Неправильный JSON в значении триггера');
+                        return;
+                    }
+                }
+
+                // Build data object (different for create vs update)
+                let data;
+                let url;
+                let method;
+                let successMessage;
+
+                if (editingAgentId) {
+                    // UPDATE mode - only send changed fields
+                    data = {
+                        agent_type: document.getElementById('agentType').value,
+                        display_name: document.getElementById('agentDisplayName').value,
+                        description: document.getElementById('agentDescription').value,
+                        trigger_type: document.getElementById('agentTriggerType').value,
+                        trigger_value: triggerValue,
+                        system_prompt: document.getElementById('agentSystemPrompt').value,
+                        model: document.getElementById('agentModel').value,
+                        temperature: parseFloat(document.getElementById('agentTemperature').value),
+                        max_tokens: parseInt(document.getElementById('agentMaxTokens').value),
+                        is_active: document.getElementById('agentIsActive').checked,
+                        priority: parseInt(document.getElementById('agentPriority').value)
+                    };
+                    url = `${API_BASE}/agents/${editingAgentId}`;
+                    method = 'PATCH';
+                    successMessage = 'Агент успешно обновлён!';
+                } else {
+                    // CREATE mode - send all fields including name
+                    data = {
+                        agent_type: document.getElementById('agentType').value,
+                        name: document.getElementById('agentName').value,
+                        display_name: document.getElementById('agentDisplayName').value,
+                        description: document.getElementById('agentDescription').value,
+                        trigger_type: document.getElementById('agentTriggerType').value,
+                        trigger_value: triggerValue,
+                        system_prompt: document.getElementById('agentSystemPrompt').value,
+                        model: document.getElementById('agentModel').value,
+                        temperature: parseFloat(document.getElementById('agentTemperature').value),
+                        max_tokens: parseInt(document.getElementById('agentMaxTokens').value),
+                        additional_config: {},
+                        is_active: document.getElementById('agentIsActive').checked,
+                        priority: parseInt(document.getElementById('agentPriority').value),
+                        tags: []
+                    };
+                    url = `${API_BASE}/agents`;
+                    method = 'POST';
+                    successMessage = 'Агент успешно создан!';
+                }
+
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || `Ошибка ${editingAgentId ? 'обновления' : 'создания'} агента`);
+                    }
+
+                    showSuccess(successMessage);
+                    closeAgentModal();
+                    loadAgents();
+                    editingAgentId = null;  // Reset editing mode
+                } catch (error) {
+                    showError(error.message);
+                }
+            });
+        };
+
+        // ========== TASKS FUNCTIONS ==========
+
+        async function loadTasks() {
+            try {
+                const statusFilter = document.getElementById('taskStatusFilter').value;
+                const categoryFilter = document.getElementById('taskCategoryFilter').value;
+
+                let url = `${API_BASE}/tasks?`;
+                if (statusFilter) url += `status=${statusFilter}&`;
+                if (categoryFilter) url += `category_id=${categoryFilter}&`;
+
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                if (!data || !Array.isArray(data.tasks)) {
+                    console.error('Invalid tasks response:', data);
+                    currentTasks = [];
+                    renderTasks([]);
+                    return;
+                }
+
+                currentTasks = data.tasks;
+                renderTasks(data.tasks);
+            } catch (error) {
+                console.error('Failed to load tasks:', error);
+                showError('Ошибка загрузки задач: ' + error.message);
+                currentTasks = [];
+                renderTasks([]);
+            }
+        }
+
+        function renderTasks(tasks) {
+            const container = document.getElementById('tasks-container');
+
+            if (tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✅</div>
+                        <h3>Нет задач</h3>
+                        <p>Задачи будут создаваться автоматически когда пользователи запрашивают действия</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const getStatusBadge = (status) => {
+                const badges = {
+                    'pending': '<span class="category-badge badge-inactive">⏳ Ожидает</span>',
+                    'in_progress': '<span class="category-badge" style="background: #fef3c7; color: #78350f;">🔄 В работе</span>',
+                    'completed': '<span class="category-badge badge-created">✅ Завершена</span>',
+                    'cancelled': '<span class="category-badge" style="background: #fee2e2; color: #7f1d1d;">❌ Отменена</span>'
+                };
+                return badges[status] || status;
+            };
+
+            const getPriorityBadge = (priority) => {
+                const badges = {
+                    'urgent': '<span class="category-badge" style="background: #fee2e2; color: #991b1b;">🔥 Срочно</span>',
+                    'high': '<span class="category-badge" style="background: #fed7aa; color: #9a3412;">⚡ Высокий</span>',
+                    'medium': '<span class="category-badge" style="background: #dbeafe; color: #1e40af;">📌 Средний</span>',
+                    'low': '<span class="category-badge" style="background: #e0e7ff; color: #3730a3;">📎 Низкий</span>'
+                };
+                return badges[priority] || priority;
+            };
+
+            container.innerHTML = `
+                <div class="intents-list">
+                    ${tasks.map(task => `
+                        <div class="intent-card">
+                            <div class="category-header">
+                                <div>
+                                    <div class="category-title">${task.summary}</div>
+                                    <div class="category-name">ID: ${task.id} • Создана: ${new Date(task.created_at).toLocaleString('ru-RU')}</div>
+                                </div>
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    ${task.category_name ? `<span class="category-badge badge-created">📁 ${task.category_name}</span>` : ''}
+                                    ${getPriorityBadge(task.priority)}
+                                    ${getStatusBadge(task.status)}
+                                </div>
+                            </div>
+                            
+                            <div class="category-description" style="margin-bottom: 15px;">
+                                <strong>Описание:</strong> ${task.description}
+                            </div>
+
+                            <div class="category-stats">
+                                <div class="stat">
+                                    👤 Исполнитель: <span class="stat-value">${task.assignee}</span>
+                                </div>
+                                ${task.original_message ? `
+                                <div class="stat">
+                                    💬 Запрос: <span class="stat-value">${task.original_message.substring(0, 100)}${task.original_message.length > 100 ? '...' : ''}</span>
+                                </div>
+                                ` : ''}
+                            </div>
+
+                            ${task.completed_at ? `
+                            <div style="margin-top: 10px; color: #10b981; font-size: 14px;">
+                                ✅ Завершена ${new Date(task.completed_at).toLocaleString('ru-RU')}${task.completed_by ? ` — ${task.completed_by}` : ''}
+                            </div>
+                            ` : ''}
+
+                            ${task.notes ? `
+                            <div style="margin-top: 10px; padding: 10px; background: #f3f4f6; border-radius: 8px; font-size: 14px;">
+                                <strong>Примечания:</strong> ${task.notes}
+                            </div>
+                            ` : ''}
+                            
+                            <div class="category-actions" style="margin-top: 15px;">
+                                ${task.status === 'pending' ? `
+                                <button class="btn btn-small" onclick="updateTaskStatus(${task.id}, 'in_progress')">
+                                    🔄 В работу
+                                </button>
+                                ` : ''}
+                                ${task.status === 'in_progress' ? `
+                                <button class="btn btn-small" onclick="updateTaskStatus(${task.id}, 'completed')">
+                                    ✅ Завершить
+                                </button>
+                                ` : ''}
+                                ${task.status !== 'cancelled' && task.status !== 'completed' ? `
+                                <button class="btn btn-small btn-danger" onclick="updateTaskStatus(${task.id}, 'cancelled')">
+                                    ❌ Отменить
+                                </button>
+                                ` : ''}
+                                <button class="btn btn-small btn-secondary" onclick="viewTaskDetails(${task.id})">
+                                    👁️ Подробнее
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        async function updateTaskStatus(taskId, newStatus) {
+            try {
+                const updateData = {
+                    status: newStatus
+                };
+
+                if (newStatus === 'completed') {
+                    updateData.completed_at = new Date().toISOString();
+                    updateData.completed_by = 'admin';
+                }
+
+                const response = await fetch(`${API_BASE}/tasks/${taskId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Ошибка обновления задачи');
+                }
+
+                showSuccess('Статус задачи обновлён!');
+                loadTasks();
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function viewTaskDetails(taskId) {
+            const task = currentTasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            alert(`Задача #${task.id}\n\n` +
+                `📋 Краткое описание: ${task.summary}\n\n` +
+                `📝 Подробное описание: ${task.description}\n\n` +
+                `👤 Исполнитель: ${task.assignee}\n` +
+                `📁 Категория: ${task.category_name || 'Не указана'}\n` +
+                `⚡ Приоритет: ${task.priority}\n` +
+                `📊 Статус: ${task.status}\n\n` +
+                `📅 Создана: ${new Date(task.created_at).toLocaleString('ru-RU')}\n` +
+                `${task.completed_at ? `✅ Завершена: ${new Date(task.completed_at).toLocaleString('ru-RU')}\n` : ''}` +
+                `${task.original_message ? `\n💬 Оригинальный запрос:\n${task.original_message}\n` : ''}` +
+                `${task.notes ? `\n📝 Примечания:\n${task.notes}` : ''}`
+            );
+        }
+
+        function updateTaskCategoryFilter() {
+            const select = document.getElementById('taskCategoryFilter');
+            if (!select) return;
+
+            if (!currentCategories || !Array.isArray(currentCategories)) {
+                select.innerHTML = '<option value="">Все категории</option>';
+                return;
+            }
+
+            select.innerHTML = '<option value="">Все категории</option>' +
+                currentCategories
+                    .filter(cat => cat.is_active)
+                    .map(cat => `<option value="${cat.id}">${cat.display_name}</option>`)
+                    .join('');
+        }
+    </script>
+</body>
+
+</html>

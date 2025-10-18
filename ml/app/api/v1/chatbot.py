@@ -20,10 +20,13 @@ from app.core.langgraph.graph import LangGraphAgent
 from app.core.langgraph.entity_extractor import EntityExtractor
 from app.core.langgraph.classifier import classification_agent
 from app.core.langgraph.react_agent import get_react_agent
+from app.core.langgraph.task_extractor import task_extractor
 from app.core.limiter import limiter
 from app.core.logging import logger
 from app.models.entity import UserEntity
 from app.models.agent_analysis import AgentAnalysis
+from app.models.task import Task
+from app.models.category import Category
 from app.schemas.chat import (
     ChatRequest,
     ChatResponse,
@@ -77,6 +80,86 @@ async def _extract_and_store_entities(messages: List[Message], session_id: str, 
         logger.error("entity_extraction_failed", error=str(e), session_id=session_id, exc_info=True)
 
 
+async def _create_task_if_needed(user_message: str, classification, user_id: int, db):
+    """Check if intent is task_creation and create a task if confidence is high enough.
+    
+    Args:
+        user_message: User message text
+        classification: Classification result with intent
+        user_id: User ID
+        db: Database session (sync SQLModel session)
+    
+    Returns:
+        Task object if created, None otherwise
+    """
+    try:
+        # Check if intent is task_creation
+        if not classification:
+            return None
+        
+        # Get intent name (handle None case)
+        intent_name = None
+        if hasattr(classification, 'intent') and classification.intent:
+            intent_name = classification.intent if isinstance(classification.intent, str) else getattr(classification.intent, 'name', None)
+        
+        if intent_name != "task_creation":
+            logger.debug("intent_not_task_creation", intent=intent_name)
+            return None
+        
+        logger.info("task_creation_intent_detected", user_message=user_message)
+        
+        # Extract task information
+        category_name = classification.category if hasattr(classification, 'category') else None
+        extraction = await task_extractor.extract_task_info(user_message, category=category_name)
+        
+        if not extraction:
+            logger.warning("task_extraction_failed", user_message=user_message)
+            return None
+        
+        # Check confidence threshold
+        if extraction.confidence < 0.7:
+            logger.info("task_confidence_too_low", confidence=extraction.confidence)
+            return None
+        
+        # Get category_id if category exists
+        category_id = None
+        if category_name:
+            from sqlmodel import select
+            category = db.exec(select(Category).where(Category.name == category_name)).first()
+            if category:
+                category_id = category.id
+        
+        # Create task
+        task = Task(
+            summary=extraction.summary,
+            description=extraction.description,
+            assignee=extraction.assignee,
+            category_id=category_id,
+            priority=extraction.priority,
+            original_message=user_message,
+            created_by=user_id,
+            status="pending"
+        )
+        
+        db.add(task)
+        db.commit()
+        db.refresh(task)
+        
+        logger.info(
+            "task_created_successfully",
+            task_id=task.id,
+            summary=task.summary,
+            priority=task.priority,
+            confidence=extraction.confidence
+        )
+        
+        return task
+        
+    except Exception as e:
+        logger.error("task_creation_failed", error=str(e), exc_info=True)
+        return None
+
+
 
 @router.post("/chat", response_model=ChatResponse)
 @limiter.limit(settings.RATE_LIMIT_ENDPOINTS["chat"][0])
@@ -120,10 +203,18 @@ async def chat(
         user_messages = [msg for msg in chat_request.messages if msg.role == "user"]
         last_user_message = user_messages[-1].content if user_messages else ""
 
-        # If use_react_agent is enabled, try to classify and use ReAct agent
-        if use_react_agent and last_user_message:
+        # Always classify user messages for task detection
+        classification = None
+        created_task = None
+        if last_user_message:
             classification = await classification_agent.classify(last_user_message)
             
+            # Try to create task if intent is task_creation
+            created_task = await _create_task_if_needed(last_user_message, classification, user_id, db)
+        
+        # If use_react_agent is enabled, use ReAct agent for non-"other" categories
+        # BUT skip ReAct agent if task was created (task_creation intent)
+        if use_react_agent and classification and last_user_message and not created_task:
             # Check if category is not "other" (both enum and string comparison for safety)
             is_not_other = (
                 classification and 
@@ -135,7 +226,8 @@ async def chat(
                 "react_agent_decision_non_stream",
                 session_id=session_id,
                 category=str(classification.category) if classification else None,
-                will_trigger=is_not_other
+                will_trigger=is_not_other,
+                task_created=False
             )
             
             if is_not_other:
@@ -228,12 +320,28 @@ async def chat(
                     )
                     # Fall through to regular agent
 
-        # Use regular agent
+        # If task was created, just return the task notification
+        if created_task:
+            task_notification = f"""✅ **Задача создана!**
+
+**Задача #{created_task.id}:** {created_task.summary}
+**Описание:** {created_task.description}
+**Исполнитель:** {created_task.assignee}
+**Приоритет:** {created_task.priority.upper()}
+**Статус:** Ожидает выполнения
+
+Вы можете отслеживать статус задачи в админ-панели."""
+            
+            result = [Message(role="assistant", content=task_notification)]
+            logger.info("chat_request_processed_task_created", session_id=session_id, task_id=created_task.id)
+            return ChatResponse(messages=result)
+        
+        # Use regular agent (only if no task was created)
         result = await agent.get_response(
             chat_request.messages, session_id, user_id=user_id
         )
 
-        logger.info("chat_request_processed", session_id=session_id)
+        logger.info("chat_request_processed", session_id=session_id, task_created=False)
 
         return ChatResponse(messages=result)
     except Exception as e:
@@ -282,6 +390,13 @@ async def chat_stream(
         # Get the last user message for classification
         user_messages = [msg for msg in chat_request.messages if msg.role == "user"]
         last_user_message = user_messages[-1].content if user_messages else ""
+        
+        # Always classify and try to create task
+        classification = None
+        created_task = None
+        if last_user_message:
+            classification = await classification_agent.classify(last_user_message)
+            created_task = await _create_task_if_needed(last_user_message, classification, user_id, db)
 
         async def event_generator():
             """Generate streaming events.
@@ -293,13 +408,39 @@ async def chat_stream(
                 Exception: If there's an error during streaming.
             """
             try:
-                # Check if we should use ReAct agent
-                should_use_react = use_react_agent and last_user_message
+                # Send task notification first if task was created
+                if created_task:
+                    task_notification = f"""✅ **Задача создана!**
+
+**Задача #{created_task.id}:** {created_task.summary}
+**Описание:** {created_task.description}
+**Исполнитель:** {created_task.assignee}
+**Приоритет:** {created_task.priority.upper()}
+**Статус:** Ожидает выполнения
+
+Вы можете отслеживать статус задачи в админ-панели.
+
+---
+
+"""
+                    # Stream task notification
+                    chunk_size = 50
+                    for i in range(0, len(task_notification), chunk_size):
+                        chunk = task_notification[i:i + chunk_size]
+                        response = StreamResponse(content=chunk, done=False)
+                        yield f"data: {json.dumps(response.model_dump())}\n\n"
+                    
+                    # Send final message and return (don't call regular agent)
+                    final_response = StreamResponse(content="", done=True)
+                    yield f"data: {json.dumps(final_response.model_dump())}\n\n"
+                    logger.info("stream_task_created_completed", session_id=session_id, task_id=created_task.id)
+                    return
+                
+                # Check if we should use ReAct agent (classification already done above)
+                # Note: This won't be reached if task was created (we return above)
+                should_use_react = use_react_agent and classification and last_user_message
                 
                 if should_use_react:
-                    # Classify the message first
-                    classification = await classification_agent.classify(last_user_message)
-                    
                     # Check if category is not "other" (both enum and string comparison for safety)
                     is_not_other = (
                         classification and 

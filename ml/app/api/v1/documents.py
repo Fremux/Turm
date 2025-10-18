@@ -232,12 +232,18 @@ async def upload_document(
         file: Uploaded file
         user_id: User ID
         collection_name: Target collection (default: default collection)
-        chunk_size: Size of chunks in tokens
+        chunk_size: Size of chunks in tokens (recommended: 200-300 for semantic/slumber, 512-1024 for others)
         chunk_overlap: Overlap between chunks
-        chunker_type: Type of chunker (token, sentence, recursive, semantic)
+        chunker_type: Type of chunker (token, sentence, recursive, semantic, slumber)
         
     Returns:
         DocumentUploadResponse: Upload result
+        
+    Note:
+        Chunks exceeding 512 characters will be automatically truncated due to:
+        - Qdrant's 1024 character limit per payload field
+        - Embedding API input length constraints
+        Use smaller chunk_size (200-300) for semantic/slumber chunkers to minimize truncation.
     """
     try:
         # Check file extension
