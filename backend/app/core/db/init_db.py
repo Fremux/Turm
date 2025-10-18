@@ -1,0 +1,140 @@
+import logging
+
+import models
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
+from core.db.session import async_engine, AsyncSession
+from settings import settings
+
+
+async def initialize_org_nodes(db: AsyncSession):
+    try:
+        stmt = """
+        INSERT INTO org_nodes(id,title,POSITION,unit_type,parent_id) VALUES 
+        ('rosatom-root','ГК «Росатом» (Головная организация)',NULL,'CORPORATION',NULL),
+        ('rosatom-ceo','Генеральный директор','Генеральный директор ГК «Росатом»','ROLE','rosatom-root'),
+        ('rosatom-dep-it','Блок ИТ и цифровизации',NULL,'BLOCK','rosatom-ceo'),
+        ('rosatom-cio','Заместитель генерального директора по ИТ/цифровизации','CIO/CDTO','ROLE','rosatom-dep-it'),
+        ('rosatom-it-directorate','Дирекция информационных технологий',NULL,'DIRECTORATE','rosatom-cio'),
+        ('rosatom-it-dev-dept','Департамент разработки ПО',NULL,'DEPARTMENT','rosatom-it-directorate'),
+        ('rosatom-it-dev-OFFICE','Отдел разработки корпоративных систем',NULL,'OFFICE','rosatom-it-dev-dept'),
+        ('rosatom-it-dev-lead-1','Руководитель группы разработки','Team Lead / Руководитель группы','POSITION','rosatom-it-dev-OFFICE'),
+        ('rosatom-it-dev-senior-1','Ведущий разработчик','Senior Software Engineer','POSITION','rosatom-it-dev-lead-1'),
+        ('rosatom-it-dev-mid-1','Программист (специалист)','Software Engineer','POSITION','rosatom-it-dev-lead-1'),
+        ('rosatom-it-dev-jun-1','Младший разработчик','Junior Software Engineer','POSITION','rosatom-it-dev-lead-1'),
+        ('rosatom-it-dev-qa-1','Инженер по тестированию','QA Engineer','POSITION','rosatom-it-dev-lead-1'),
+        ('rosatom-it-arch','Отдел архитектуры и интеграции',NULL,'OFFICE','rosatom-it-dev-dept'),
+        ('rosatom-it-arch-head','Начальник отдела архитектуры','Head of Enterprise Architecture','POSITION','rosatom-it-arch'),
+        ('rosatom-it-arch-sol','Системный архитектор','Solution Architect','POSITION','rosatom-it-arch-head'),
+        ('rosatom-it-arch-ba','Бизнес-аналитик','Business Analyst','POSITION','rosatom-it-arch-head'),
+        ('rosatom-it-devops-dept','Департамент эксплуатации и платформ (DevOps/SRE)',NULL,'DEPARTMENT','rosatom-it-directorate'),
+        ('rosatom-it-devops-team','Группа DevOps/SRE',NULL,'TEAM','rosatom-it-devops-dept'),
+        ('rosatom-it-devops-lead','Руководитель группы DevOps','DevOps Team Lead','POSITION','rosatom-it-devops-team'),
+        ('rosatom-it-devops-eng-1','DevOps-инженер','DevOps Engineer','POSITION','rosatom-it-devops-lead'),
+        ('rosatom-it-sre-1','Инженер надежности (SRE)','Site Reliability Engineer','POSITION','rosatom-it-devops-lead'),
+        ('rosatom-it-infra','Отдел инфраструктуры (ДЦ, сети, БД)',NULL,'OFFICE','rosatom-it-devops-dept'),
+        ('rosatom-it-infra-head','Начальник отдела эксплуатации ИТ-инфраструктуры','Head of IT Infrastructure','POSITION','rosatom-it-infra'),
+        ('rosatom-it-net','Инженер сетевой инфраструктуры','Network Engineer','POSITION','rosatom-it-infra-head'),
+        ('rosatom-it-lb','Инженер балансировки/Firewall','Network/LB Engineer','POSITION','rosatom-it-infra-head'),
+        ('rosatom-it-sys','Системный администратор','System Administrator','POSITION','rosatom-it-infra-head'),
+        ('rosatom-it-dba','Администратор баз данных','DBA','POSITION','rosatom-it-infra-head'),
+        ('rosatom-it-backup','Инженер по резервному копированию','Backup Engineer','POSITION','rosatom-it-infra-head'),
+        ('rosatom-it-vdi','Инженер VDI/RDP/бастион','VDI/RDP Engineer','POSITION','rosatom-it-infra-head'),
+        ('rosatom-it-servicedesk','Сервис-деск и поддержка пользователей',NULL,'OFFICE','rosatom-it-devops-dept'),
+        ('rosatom-it-servicedesk-head','Начальник отдела поддержки','Support Manager','POSITION','rosatom-it-servicedesk'),
+        ('rosatom-it-l1','Специалист техподдержки (L1)','Service Desk Agent','POSITION','rosatom-it-servicedesk-head'),
+        ('rosatom-it-l2','Инженер поддержки (L2/L3)','Support Engineer','POSITION','rosatom-it-servicedesk-head'),
+        ('rosatom-it-m365','Администратор M365/Collaboration','M365/Teams/SharePoint Admin','POSITION','rosatom-it-servicedesk-head'),
+        ('rosatom-it-exchange','Администратор Exchange/почты','Exchange Admin','POSITION','rosatom-it-servicedesk-head'),
+        ('rosatom-it-monitoring','Отдел мониторинга и логов',NULL,'OFFICE','rosatom-it-devops-dept'),
+        ('rosatom-it-monitoring-head','Руководитель мониторинга','Monitoring Lead','POSITION','rosatom-it-monitoring'),
+        ('rosatom-it-prom','Инженер мониторинга (Prometheus/Grafana/Zabbix)','Monitoring Engineer','POSITION','rosatom-it-monitoring-head'),
+        ('rosatom-it-logs','Инженер по логам (Splunk/ELK)','Logging Engineer','POSITION','rosatom-it-monitoring-head'),
+        ('rosatom-it-security','Отдел информационной безопасности',NULL,'OFFICE','rosatom-it-devops-dept'),
+        ('rosatom-it-sec-head','Руководитель по ИБ','Head of Information Security','POSITION','rosatom-it-security'),
+        ('rosatom-it-sec-analyst','Аналитик ИБ','Security Analyst','POSITION','rosatom-it-sec-head'),
+        ('rosatom-dep-hr','Блок по персоналу (HR)',NULL,'BLOCK','rosatom-ceo'),
+        ('rosatom-hr-vp','Заместитель генерального директора по персоналу','CHRO','ROLE','rosatom-dep-hr'),
+        ('rosatom-hr-directorate','Дирекция по персоналу',NULL,'DIRECTORATE','rosatom-hr-vp'),
+        ('rosatom-hr-operations','Управление кадрового администрирования (HR Operations)',NULL,'DIVISION','rosatom-hr-directorate'),
+        ('rosatom-hr-lead','Начальник HR-операций','HR Operations Lead','POSITION','rosatom-hr-operations'),
+        ('rosatom-hr-specialist','Специалист по кадрам','HR Specialist','POSITION','rosatom-hr-lead'),
+        ('rosatom-hr-docs','Инспектор по кадрам/делопроизводству','HR Administrator','POSITION','rosatom-hr-lead'),
+        ('rosatom-hr-lk','Администратор ЛК/HRIS','HRIS Administrator','POSITION','rosatom-hr-lead'),
+        ('rosatom-hr-payroll','Отдел расчёта ЗП и льгот (1С:ЗУП)',NULL,'OFFICE','rosatom-hr-directorate'),
+        ('rosatom-hr-payroll-head','Руководитель расчёта ЗП','Payroll Lead','POSITION','rosatom-hr-payroll'),
+        ('rosatom-hr-payroll-spec','Специалист по расчёту ЗП','Payroll Specialist (1C ZUP)','POSITION','rosatom-hr-payroll-head'),
+        ('rosatom-hr-benefits','Специалист по льготам и ДМС','Benefits Specialist','POSITION','rosatom-hr-payroll-head'),
+        ('rosatom-hr-learning','Отдел обучения и развития (L&D)',NULL,'OFFICE','rosatom-hr-directorate'),
+        ('rosatom-hr-ld-head','Руководитель обучения','L&D Lead','POSITION','rosatom-hr-learning'),
+        ('rosatom-hr-lms','Администратор LMS','LMS Administrator','POSITION','rosatom-hr-ld-head'),
+        ('rosatom-hr-trainer','Специалист по обучению','Training Specialist','POSITION','rosatom-hr-ld-head'),
+        ('rosatom-dep-fin','Блок экономики и финансов',NULL,'BLOCK','rosatom-ceo'),
+        ('rosatom-cfo','Заместитель генерального директора по экономике и финансам','CFO','ROLE','rosatom-dep-fin'),
+        ('rosatom-fin-directorate','Дирекция по экономике и финансам',NULL,'DIRECTORATE','rosatom-cfo'),
+        ('rosatom-acc-dept','Бухгалтерия (департамент бухгалтерского учёта)',NULL,'DEPARTMENT','rosatom-fin-directorate'),
+        ('rosatom-acc-head','Главный бухгалтер','Head of Accounting','POSITION','rosatom-acc-dept'),
+        ('rosatom-acc-senior','Старший бухгалтер','Senior Accountant','POSITION','rosatom-acc-head'),
+        ('rosatom-acc-ap','Бухгалтер AP (поставщики)','AP Accountant (1C/SAP)','POSITION','rosatom-acc-head'),
+        ('rosatom-acc-ar','Бухгалтер AR (заказчики)','AR Accountant (1C/SAP)','POSITION','rosatom-acc-head'),
+        ('rosatom-acc-payroll','Бухгалтер по заработной плате','Payroll Accountant (1C ZUP)','POSITION','rosatom-acc-head'),
+        ('rosatom-acc-tax','Налоговый бухгалтер (НДС/6-НДФЛ)','Tax Accountant','POSITION','rosatom-acc-head'),
+        ('rosatom-acc-1c','Методолог 1С/консультант SAP FI','ERP Finance Consultant','POSITION','rosatom-acc-head'),
+        ('rosatom-treasury','Казначейство и банковские операции',NULL,'DIVISION','rosatom-fin-directorate'),
+        ('rosatom-treasury-head','Руководитель казначейства','Treasury Lead','POSITION','rosatom-treasury'),
+        ('rosatom-treasury-spec','Специалист по платежам/реестрам','Treasury Specialist','POSITION','rosatom-treasury-head'),
+        ('rosatom-edo','ЭДО/Электронная подпись/Отчётность',NULL,'DIVISION','rosatom-fin-directorate'),
+        ('rosatom-edo-head','Руководитель ЭДО/ЭП','Head of EDI/PKI','POSITION','rosatom-edo'),
+        ('rosatom-edo-operator','Оператор ЭДО (Диадок/СБИС/Контур)','EDI Operator','POSITION','rosatom-edo-head'),
+        ('rosatom-ep-admin','Администратор ЭП/криптопровайдера','PKI Administrator','POSITION','rosatom-edo-head'),
+        ('rosatom-dep-admin','Административный департамент',NULL,'DEPARTMENT','rosatom-ceo'),
+        ('rosatom-admin-dir','Директор административного департамента','Директор департамента','ROLE','rosatom-dep-admin'),
+        ('rosatom-OFFICE-general','Общий отдел (канцелярия, делопроизводство)',NULL,'OFFICE','rosatom-admin-dir'),
+        ('rosatom-OFFICE-general-head','Руководитель общего отдела','Начальник канцелярии','POSITION','rosatom-OFFICE-general'),
+        ('rosatom-doc-spec','Специалист по документообороту','Records Management Specialist','POSITION','rosatom-OFFICE-general-head'),
+        ('rosatom-courier','Курьер/делопроизводитель','Clerk','POSITION','rosatom-OFFICE-general-head'),
+        ('rosatom-facility','Фасилити / административные сервисы / офисная инфраструктура',NULL,'DIVISION','rosatom-admin-dir'),
+        ('rosatom-facility-head','Начальник отдела фасилити-сервисов','Head of Facilities','POSITION','rosatom-facility'),
+        ('rosatom-pass-OFFICE','Служба пропусков и парковки',NULL,'OFFICE','rosatom-facility-head'),
+        ('rosatom-pass-lead','Руководитель службы пропусков','Pass & Parking Lead','POSITION','rosatom-pass-OFFICE'),
+        ('rosatom-pass-operator','Оператор пропускного режима','Access Control Operator','POSITION','rosatom-pass-lead'),
+        ('rosatom-parking-coord','Координатор парковки','Parking Coordinator','POSITION','rosatom-pass-lead'),
+        ('rosatom-meeting-av','Сервис переговорных и АВ-оборудования',NULL,'OFFICE','rosatom-facility-head'),
+        ('rosatom-meeting-lead','Руководитель AV-сервиса','AV/Meeting Rooms Lead','POSITION','rosatom-meeting-av'),
+        ('rosatom-av-tech','Инженер по АВ и видеоконференциям','AV/Videoconf Engineer','POSITION','rosatom-meeting-lead'),
+        ('rosatom-workplace','Рабочие места и офисное оборудование',NULL,'OFFICE','rosatom-facility-head'),
+        ('rosatom-workplace-lead','Руководитель по рабочим местам','Workplace Lead','POSITION','rosatom-workplace'),
+        ('rosatom-facility-tech','Техник по эксплуатации','Facilities Technician','POSITION','rosatom-workplace-lead'),
+        ('rosatom-telephony','Инженер телефонии','Telephony Engineer','POSITION','rosatom-workplace-lead'),
+        ('rosatom-reception','Супервайзер ресепшен/очередей','Reception/Queue Supervisor','POSITION','rosatom-workplace-lead'),
+        ('rosatom-guestwifi','Гостевые сервисы/гостевой Wi‑Fi',NULL,'OFFICE','rosatom-facility-head'),
+        ('rosatom-guestwifi-coord','Координатор гостевых сервисов','Guest Services Coordinator','POSITION','rosatom-guestwifi'),
+        ('rosatom-dep-legal','Юридический блок',NULL,'BLOCK','rosatom-ceo'),
+        ('rosatom-legal-cto','Заместитель генерального директора по правовым вопросам',NULL,'ROLE','rosatom-dep-legal'),
+        ('rosatom-legal-dept','Юридический департамент',NULL,'DEPARTMENT','rosatom-legal-cto'),
+        ('rosatom-legal-litigation','Управление судебно-правовой работы',NULL,'DIVISION','rosatom-legal-dept'),
+        ('rosatom-legal-lit-head','Начальник управления','Head of Litigation','POSITION','rosatom-legal-litigation'),
+        ('rosatom-legal-lawyer-1','Старший юрисконсульт','Senior Legal Counsel','POSITION','rosatom-legal-lit-head'),
+        ('rosatom-legal-lawyer-2','Юрисконсульт','Legal Counsel','POSITION','rosatom-legal-lit-head'),
+        ('rosatom-legal-contracts','Управление договорной работы и комплаенса',NULL,'DIVISION','rosatom-legal-dept'),
+        ('rosatom-functional-lines','Функциональные направления (пример: закупки/логистика)',NULL,'BLOCK','rosatom-ceo'),
+        ('rosatom-procurement','Департамент закупок и логистики (пример)',NULL,'DEPARTMENT','rosatom-functional-lines'),
+        ('rosatom-proc-head','Директор департамента закупок','Director of Procurement','ROLE','rosatom-procurement'),
+        ('rosatom-proc-supply-mgmt','Управление снабжения',NULL,'DIVISION','rosatom-proc-head'),
+        ('rosatom-proc-line-manager-1','Линейный функциональный менеджер','Руководитель функционального отдела (снабжение)','POSITION','rosatom-proc-supply-mgmt'),
+        ('rosatom-proc-buyer','Специалист по закупкам','Buyer','POSITION','rosatom-proc-line-manager-1'),
+        ('rosatom-proc-analyst','Аналитик по закупкам','Procurement Analyst','POSITION','rosatom-proc-line-manager-1'),
+        ('rosatom-proc-logistics','Управление логистики',NULL,'DIVISION','rosatom-proc-head');
+        """
+        await db.execute(text(stmt))
+        await db.commit()
+        logging.error("Organization nodes initialized")
+    except SQLAlchemyError as e:
+        logging.error("New org nodes not initialized")
+
+
+async def init_database() -> None:
+    async with async_engine.begin() as conn:
+        await conn.run_sync(models.base.Base.metadata.create_all)
+        if settings.DEMO_MODE:
+            await initialize_org_nodes(db=conn)
