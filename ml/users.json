@@ -1,0 +1,1013 @@
+{
+    "id": "rosatom-root",
+    "title": "ГК «Росатом» (Головная организация)",
+    "unit_type": "corporation",
+    "children": [
+        {
+            "id": "rosatom-ceo",
+            "title": "Генеральный директор",
+            "position": "Генеральный директор ГК «Росатом»",
+            "unit_type": "role",
+            "children": [
+                {
+                    "id": "rosatom-dep-it",
+                    "title": "Блок ИТ и цифровизации",
+                    "unit_type": "block",
+                    "children": [
+                        {
+                            "id": "rosatom-cio",
+                            "title": "Заместитель генерального директора по ИТ/цифровизации",
+                            "position": "CIO/CDTO",
+                            "unit_type": "role",
+                            "children": [
+                                {
+                                    "id": "rosatom-it-directorate",
+                                    "title": "Дирекция информационных технологий",
+                                    "unit_type": "directorate",
+                                    "children": [
+                                        {
+                                            "id": "rosatom-it-dev-dept",
+                                            "title": "Департамент разработки ПО",
+                                            "unit_type": "department",
+                                            "children": [
+                                                {
+                                                    "id": "rosatom-it-dev-office",
+                                                    "title": "Отдел разработки корпоративных систем",
+                                                    "unit_type": "office",
+                                                    "children": [
+                                                        {
+                                                            "id": "rosatom-it-dev-lead-1",
+                                                            "title": "Руководитель группы разработки",
+                                                            "position": "Team Lead / Руководитель группы",
+                                                            "unit_type": "position",
+                                                            "children": [
+                                                                {
+                                                                    "id": "rosatom-it-dev-senior-1",
+                                                                    "title": "Ведущий разработчик",
+                                                                    "position": "Senior Software Engineer",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "id": "rosatom-it-dev-mid-1",
+                                                                    "title": "Программист (специалист)",
+                                                                    "position": "Software Engineer",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "id": "rosatom-it-dev-jun-1",
+                                                                    "title": "Младший разработчик",
+                                                                    "position": "Junior Software Engineer",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "id": "rosatom-it-dev-qa-1",
+                                                                    "title": "Инженер по тестированию",
+                                                                    "position": "QA Engineer",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "id": "rosatom-it-arch",
+                                                    "title": "Отдел архитектуры и интеграции",
+                                                    "unit_type": "office",
+                                                    "children": [
+                                                        {
+                                                            "id": "rosatom-it-arch-head",
+                                                            "title": "Начальник отдела архитектуры",
+                                                            "position": "Head of Enterprise Architecture",
+                                                            "unit_type": "position",
+                                                            "children": [
+                                                                {
+                                                                    "id": "rosatom-it-arch-sol",
+                                                                    "title": "Системный архитектор",
+                                                                    "position": "Solution Architect",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "id": "rosatom-it-arch-ba",
+                                                                    "title": "Бизнес-аналитик",
+                                                                    "position": "Business Analyst",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "rosatom-it-devops-dept",
+                                            "title": "Департамент эксплуатации и платформ (DevOps/SRE)",
+                                            "unit_type": "department",
+                                            "children": [
+                                                {
+                                                    "id": "rosatom-it-devops-team",
+                                                    "title": "Группа DevOps/SRE",
+                                                    "unit_type": "team",
+                                                    "children": [
+                                                        {
+                                                            "id": "rosatom-it-devops-lead",
+                                                            "title": "Руководитель группы DevOps",
+                                                            "position": "DevOps Team Lead",
+                                                            "unit_type": "position",
+                                                            "children": [
+                                                                {
+                                                                    "id": "rosatom-it-devops-eng-1",
+                                                                    "title": "DevOps-инженер",
+                                                                    "position": "DevOps Engineer",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "id": "rosatom-it-sre-1",
+                                                                    "title": "Инженер надежности (SRE)",
+                                                                    "position": "Site Reliability Engineer",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "id": "rosatom-it-infra",
+                                                    "title": "Отдел инфраструктуры (ДЦ, сети, БД)",
+                                                    "unit_type": "office",
+                                                    "children": [
+                                                        {
+                                                            "id": "rosatom-it-infra-head",
+                                                            "title": "Начальник отдела эксплуатации ИТ-инфраструктуры",
+                                                            "position": "Head of IT Infrastructure",
+                                                            "unit_type": "position",
+                                                            "children": [
+                                                                {
+                                                                    "id": "rosatom-it-net",
+                                                                    "title": "Инженер сетевой инфраструктуры",
+                                                                    "position": "Network Engineer",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "id": "rosatom-it-lb",
+                                                                    "title": "Инженер балансировки/Firewall",
+                                                                    "position": "Network/LB Engineer",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "id": "rosatom-it-sys",
+                                                                    "title": "Системный администратор",
+                                                                    "position": "System Administrator",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "id": "rosatom-it-dba",
+                                                                    "title": "Администратор баз данных",
+                                                                    "position": "DBA",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "id": "rosatom-it-backup",
+                                                                    "title": "Инженер по резервному копированию",
+                                                                    "position": "Backup Engineer",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "id": "rosatom-it-vdi",
+                                                                    "title": "Инженер VDI/RDP/бастион",
+                                                                    "position": "VDI/RDP Engineer",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "id": "rosatom-it-servicedesk",
+                                                    "title": "Сервис-деск и поддержка пользователей",
+                                                    "unit_type": "office",
+                                                    "children": [
+                                                        {
+                                                            "id": "rosatom-it-servicedesk-head",
+                                                            "title": "Начальник отдела поддержки",
+                                                            "position": "Support Manager",
+                                                            "unit_type": "position",
+                                                            "children": [
+                                                                {
+                                                                    "id": "rosatom-it-l1",
+                                                                    "title": "Специалист техподдержки (L1)",
+                                                                    "position": "Service Desk Agent",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "id": "rosatom-it-l2",
+                                                                    "title": "Инженер поддержки (L2/L3)",
+                                                                    "position": "Support Engineer",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "id": "rosatom-it-m365",
+                                                                    "title": "Администратор M365/Collaboration",
+                                                                    "position": "M365/Teams/SharePoint Admin",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "id": "rosatom-it-exchange",
+                                                                    "title": "Администратор Exchange/почты",
+                                                                    "position": "Exchange Admin",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "id": "rosatom-it-monitoring",
+                                                    "title": "Отдел мониторинга и логов",
+                                                    "unit_type": "office",
+                                                    "children": [
+                                                        {
+                                                            "id": "rosatom-it-monitoring-head",
+                                                            "title": "Руководитель мониторинга",
+                                                            "position": "Monitoring Lead",
+                                                            "unit_type": "position",
+                                                            "children": [
+                                                                {
+                                                                    "id": "rosatom-it-prom",
+                                                                    "title": "Инженер мониторинга (Prometheus/Grafana/Zabbix)",
+                                                                    "position": "Monitoring Engineer",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "id": "rosatom-it-logs",
+                                                                    "title": "Инженер по логам (Splunk/ELK)",
+                                                                    "position": "Logging Engineer",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "id": "rosatom-it-security",
+                                                    "title": "Отдел информационной безопасности",
+                                                    "unit_type": "office",
+                                                    "children": [
+                                                        {
+                                                            "id": "rosatom-it-sec-head",
+                                                            "title": "Руководитель по ИБ",
+                                                            "position": "Head of Information Security",
+                                                            "unit_type": "position",
+                                                            "children": [
+                                                                {
+                                                                    "id": "rosatom-it-sec-analyst",
+                                                                    "title": "Аналитик ИБ",
+                                                                    "position": "Security Analyst",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "rosatom-dep-hr",
+                    "title": "Блок по персоналу (HR)",
+                    "unit_type": "block",
+                    "children": [
+                        {
+                            "id": "rosatom-hr-vp",
+                            "title": "Заместитель генерального директора по персоналу",
+                            "position": "CHRO",
+                            "unit_type": "role",
+                            "children": [
+                                {
+                                    "id": "rosatom-hr-directorate",
+                                    "title": "Дирекция по персоналу",
+                                    "unit_type": "directorate",
+                                    "children": [
+                                        {
+                                            "id": "rosatom-hr-operations",
+                                            "title": "Управление кадрового администрирования (HR Operations)",
+                                            "unit_type": "division",
+                                            "children": [
+                                                {
+                                                    "id": "rosatom-hr-lead",
+                                                    "title": "Начальник HR-операций",
+                                                    "position": "HR Operations Lead",
+                                                    "unit_type": "position",
+                                                    "children": [
+                                                        {
+                                                            "id": "rosatom-hr-specialist",
+                                                            "title": "Специалист по кадрам",
+                                                            "position": "HR Specialist",
+                                                            "unit_type": "position",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "id": "rosatom-hr-docs",
+                                                            "title": "Инспектор по кадрам/делопроизводству",
+                                                            "position": "HR Administrator",
+                                                            "unit_type": "position",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "id": "rosatom-hr-lk",
+                                                            "title": "Администратор ЛК/HRIS",
+                                                            "position": "HRIS Administrator",
+                                                            "unit_type": "position",
+                                                            "children": []
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "rosatom-hr-payroll",
+                                            "title": "Отдел расчёта ЗП и льгот (1С:ЗУП)",
+                                            "unit_type": "office",
+                                            "children": [
+                                                {
+                                                    "id": "rosatom-hr-payroll-head",
+                                                    "title": "Руководитель расчёта ЗП",
+                                                    "position": "Payroll Lead",
+                                                    "unit_type": "position",
+                                                    "children": [
+                                                        {
+                                                            "id": "rosatom-hr-payroll-spec",
+                                                            "title": "Специалист по расчёту ЗП",
+                                                            "position": "Payroll Specialist (1C ZUP)",
+                                                            "unit_type": "position",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "id": "rosatom-hr-benefits",
+                                                            "title": "Специалист по льготам и ДМС",
+                                                            "position": "Benefits Specialist",
+                                                            "unit_type": "position",
+                                                            "children": []
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "rosatom-hr-learning",
+                                            "title": "Отдел обучения и развития (L&D)",
+                                            "unit_type": "office",
+                                            "children": [
+                                                {
+                                                    "id": "rosatom-hr-ld-head",
+                                                    "title": "Руководитель обучения",
+                                                    "position": "L&D Lead",
+                                                    "unit_type": "position",
+                                                    "children": [
+                                                        {
+                                                            "id": "rosatom-hr-lms",
+                                                            "title": "Администратор LMS",
+                                                            "position": "LMS Administrator",
+                                                            "unit_type": "position",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "id": "rosatom-hr-trainer",
+                                                            "title": "Специалист по обучению",
+                                                            "position": "Training Specialist",
+                                                            "unit_type": "position",
+                                                            "children": []
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "rosatom-dep-fin",
+                    "title": "Блок экономики и финансов",
+                    "unit_type": "block",
+                    "children": [
+                        {
+                            "id": "rosatom-cfo",
+                            "title": "Заместитель генерального директора по экономике и финансам",
+                            "position": "CFO",
+                            "unit_type": "role",
+                            "children": [
+                                {
+                                    "id": "rosatom-fin-directorate",
+                                    "title": "Дирекция по экономике и финансам",
+                                    "unit_type": "directorate",
+                                    "children": [
+                                        {
+                                            "id": "rosatom-acc-dept",
+                                            "title": "Бухгалтерия (департамент бухгалтерского учёта)",
+                                            "unit_type": "department",
+                                            "children": [
+                                                {
+                                                    "id": "rosatom-acc-head",
+                                                    "title": "Главный бухгалтер",
+                                                    "position": "Head of Accounting",
+                                                    "unit_type": "position",
+                                                    "children": [
+                                                        {
+                                                            "id": "rosatom-acc-senior",
+                                                            "title": "Старший бухгалтер",
+                                                            "position": "Senior Accountant",
+                                                            "unit_type": "position",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "id": "rosatom-acc-ap",
+                                                            "title": "Бухгалтер AP (поставщики)",
+                                                            "position": "AP Accountant (1C/SAP)",
+                                                            "unit_type": "position",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "id": "rosatom-acc-ar",
+                                                            "title": "Бухгалтер AR (заказчики)",
+                                                            "position": "AR Accountant (1C/SAP)",
+                                                            "unit_type": "position",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "id": "rosatom-acc-payroll",
+                                                            "title": "Бухгалтер по заработной плате",
+                                                            "position": "Payroll Accountant (1C ZUP)",
+                                                            "unit_type": "position",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "id": "rosatom-acc-tax",
+                                                            "title": "Налоговый бухгалтер (НДС/6-НДФЛ)",
+                                                            "position": "Tax Accountant",
+                                                            "unit_type": "position",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "id": "rosatom-acc-1c",
+                                                            "title": "Методолог 1С/консультант SAP FI",
+                                                            "position": "ERP Finance Consultant",
+                                                            "unit_type": "position",
+                                                            "children": []
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "rosatom-treasury",
+                                            "title": "Казначейство и банковские операции",
+                                            "unit_type": "division",
+                                            "children": [
+                                                {
+                                                    "id": "rosatom-treasury-head",
+                                                    "title": "Руководитель казначейства",
+                                                    "position": "Treasury Lead",
+                                                    "unit_type": "position",
+                                                    "children": [
+                                                        {
+                                                            "id": "rosatom-treasury-spec",
+                                                            "title": "Специалист по платежам/реестрам",
+                                                            "position": "Treasury Specialist",
+                                                            "unit_type": "position",
+                                                            "children": []
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "rosatom-edo",
+                                            "title": "ЭДО/Электронная подпись/Отчётность",
+                                            "unit_type": "division",
+                                            "children": [
+                                                {
+                                                    "id": "rosatom-edo-head",
+                                                    "title": "Руководитель ЭДО/ЭП",
+                                                    "position": "Head of EDI/PKI",
+                                                    "unit_type": "position",
+                                                    "children": [
+                                                        {
+                                                            "id": "rosatom-edo-operator",
+                                                            "title": "Оператор ЭДО (Диадок/СБИС/Контур)",
+                                                            "position": "EDI Operator",
+                                                            "unit_type": "position",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "id": "rosatom-ep-admin",
+                                                            "title": "Администратор ЭП/криптопровайдера",
+                                                            "position": "PKI Administrator",
+                                                            "unit_type": "position",
+                                                            "children": []
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "rosatom-dep-admin",
+                    "title": "Административный департамент",
+                    "unit_type": "department",
+                    "children": [
+                        {
+                            "id": "rosatom-admin-dir",
+                            "title": "Директор административного департамента",
+                            "position": "Директор департамента",
+                            "unit_type": "role",
+                            "children": [
+                                {
+                                    "id": "rosatom-office-general",
+                                    "title": "Общий отдел (канцелярия, делопроизводство)",
+                                    "unit_type": "office",
+                                    "children": [
+                                        {
+                                            "id": "rosatom-office-general-head",
+                                            "title": "Руководитель общего отдела",
+                                            "position": "Начальник канцелярии",
+                                            "unit_type": "position",
+                                            "children": [
+                                                {
+                                                    "id": "rosatom-doc-spec",
+                                                    "title": "Специалист по документообороту",
+                                                    "position": "Records Management Specialist",
+                                                    "unit_type": "position",
+                                                    "children": []
+                                                },
+                                                {
+                                                    "id": "rosatom-courier",
+                                                    "title": "Курьер/делопроизводитель",
+                                                    "position": "Clerk",
+                                                    "unit_type": "position",
+                                                    "children": []
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "id": "rosatom-facility",
+                                    "title": "Фасилити / административные сервисы / офисная инфраструктура",
+                                    "unit_type": "division",
+                                    "children": [
+                                        {
+                                            "id": "rosatom-facility-head",
+                                            "title": "Начальник отдела фасилити-сервисов",
+                                            "position": "Head of Facilities",
+                                            "unit_type": "position",
+                                            "children": [
+                                                {
+                                                    "id": "rosatom-pass-office",
+                                                    "title": "Служба пропусков и парковки",
+                                                    "unit_type": "office",
+                                                    "children": [
+                                                        {
+                                                            "id": "rosatom-pass-lead",
+                                                            "title": "Руководитель службы пропусков",
+                                                            "position": "Pass & Parking Lead",
+                                                            "unit_type": "position",
+                                                            "children": [
+                                                                {
+                                                                    "id": "rosatom-pass-operator",
+                                                                    "title": "Оператор пропускного режима",
+                                                                    "position": "Access Control Operator",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "id": "rosatom-parking-coord",
+                                                                    "title": "Координатор парковки",
+                                                                    "position": "Parking Coordinator",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "id": "rosatom-meeting-av",
+                                                    "title": "Сервис переговорных и АВ-оборудования",
+                                                    "unit_type": "office",
+                                                    "children": [
+                                                        {
+                                                            "id": "rosatom-meeting-lead",
+                                                            "title": "Руководитель AV-сервиса",
+                                                            "position": "AV/Meeting Rooms Lead",
+                                                            "unit_type": "position",
+                                                            "children": [
+                                                                {
+                                                                    "id": "rosatom-av-tech",
+                                                                    "title": "Инженер по АВ и видеоконференциям",
+                                                                    "position": "AV/Videoconf Engineer",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "id": "rosatom-workplace",
+                                                    "title": "Рабочие места и офисное оборудование",
+                                                    "unit_type": "office",
+                                                    "children": [
+                                                        {
+                                                            "id": "rosatom-workplace-lead",
+                                                            "title": "Руководитель по рабочим местам",
+                                                            "position": "Workplace Lead",
+                                                            "unit_type": "position",
+                                                            "children": [
+                                                                {
+                                                                    "id": "rosatom-facility-tech",
+                                                                    "title": "Техник по эксплуатации",
+                                                                    "position": "Facilities Technician",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "id": "rosatom-telephony",
+                                                                    "title": "Инженер телефонии",
+                                                                    "position": "Telephony Engineer",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "id": "rosatom-reception",
+                                                                    "title": "Супервайзер ресепшен/очередей",
+                                                                    "position": "Reception/Queue Supervisor",
+                                                                    "unit_type": "position",
+                                                                    "children": []
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "id": "rosatom-guestwifi",
+                                                    "title": "Гостевые сервисы/гостевой Wi‑Fi",
+                                                    "unit_type": "office",
+                                                    "children": [
+                                                        {
+                                                            "id": "rosatom-guestwifi-coord",
+                                                            "title": "Координатор гостевых сервисов",
+                                                            "position": "Guest Services Coordinator",
+                                                            "unit_type": "position",
+                                                            "children": []
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "rosatom-dep-legal",
+                    "title": "Юридический блок",
+                    "unit_type": "block",
+                    "children": [
+                        {
+                            "id": "rosatom-legal-cto",
+                            "title": "Заместитель генерального директора по правовым вопросам",
+                            "unit_type": "role",
+                            "children": [
+                                {
+                                    "id": "rosatom-legal-dept",
+                                    "title": "Юридический департамент",
+                                    "unit_type": "department",
+                                    "children": [
+                                        {
+                                            "id": "rosatom-legal-litigation",
+                                            "title": "Управление судебно-правовой работы",
+                                            "unit_type": "division",
+                                            "children": [
+                                                {
+                                                    "id": "rosatom-legal-lit-head",
+                                                    "title": "Начальник управления",
+                                                    "position": "Head of Litigation",
+                                                    "unit_type": "position",
+                                                    "children": [
+                                                        {
+                                                            "id": "rosatom-legal-lawyer-1",
+                                                            "title": "Старший юрисконсульт",
+                                                            "position": "Senior Legal Counsel",
+                                                            "unit_type": "position",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "id": "rosatom-legal-lawyer-2",
+                                                            "title": "Юрисконсульт",
+                                                            "position": "Legal Counsel",
+                                                            "unit_type": "position",
+                                                            "children": []
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "rosatom-legal-contracts",
+                                            "title": "Управление договорной работы и комплаенса",
+                                            "unit_type": "division",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "rosatom-functional-lines",
+                    "title": "Функциональные направления (пример: закупки/логистика)",
+                    "unit_type": "block",
+                    "children": [
+                        {
+                            "id": "rosatom-procurement",
+                            "title": "Департамент закупок и логистики (пример)",
+                            "unit_type": "department",
+                            "children": [
+                                {
+                                    "id": "rosatom-proc-head",
+                                    "title": "Директор департамента закупок",
+                                    "position": "Director of Procurement",
+                                    "unit_type": "role",
+                                    "children": [
+                                        {
+                                            "id": "rosatom-proc-supply-mgmt",
+                                            "title": "Управление снабжения",
+                                            "unit_type": "division",
+                                            "children": [
+                                                {
+                                                    "id": "rosatom-proc-line-manager-1",
+                                                    "title": "Линейный функциональный менеджер",
+                                                    "position": "Руководитель функционального отдела (снабжение)",
+                                                    "unit_type": "position",
+                                                    "children": [
+                                                        {
+                                                            "id": "rosatom-proc-buyer",
+                                                            "title": "Специалист по закупкам",
+                                                            "position": "Buyer",
+                                                            "unit_type": "position",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "id": "rosatom-proc-analyst",
+                                                            "title": "Аналитик по закупкам",
+                                                            "position": "Procurement Analyst",
+                                                            "unit_type": "position",
+                                                            "children": []
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "rosatom-proc-logistics",
+                                            "title": "Управление логистики",
+                                            "unit_type": "division",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "task_coverage": {
+        "HR": {
+            "actions": {
+                "согласовать/оформить/изменить": {
+                    "handled_by_id": "rosatom-hr-specialist"
+                },
+                "предоставить справку": {
+                    "handled_by_id": "rosatom-hr-docs"
+                },
+                "исправить начисление": {
+                    "handled_by_id": "rosatom-hr-payroll-spec"
+                },
+                "открыть доступ к ЛК": {
+                    "handled_by_id": "rosatom-hr-lk"
+                },
+                "записать на обучение": {
+                    "handled_by_id": "rosatom-hr-lms"
+                }
+            },
+            "entities": {
+                "график/дистант/0.5 ставки/отпуск/командировка": {
+                    "handled_by_id": "rosatom-hr-specialist"
+                },
+                "ЛК сотрудника": {
+                    "handled_by_id": "rosatom-hr-lk"
+                },
+                "льготы/медстрах": {
+                    "handled_by_id": "rosatom-hr-benefits"
+                },
+                "обучение/LMS": {
+                    "handled_by_id": "rosatom-hr-lms"
+                },
+                "справки (2-НДФЛ, 182н, стаж, банк/консульство)": {
+                    "handled_by_id": "rosatom-hr-docs"
+                },
+                "индексация/оклад": {
+                    "handled_by_id": "rosatom-hr-lead"
+                }
+            }
+        },
+        "IT": {
+            "actions": {
+                "создать/изменить/восстановить доступ (AD/VPN/SSO/MFA)": {
+                    "handled_by_id": "rosatom-it-l1",
+                    "escalate_to_id": "rosatom-it-sys"
+                },
+                "выдать права/группы AD": {
+                    "handled_by_id": "rosatom-it-sys"
+                },
+                "настроить оборудование (принтер/монитор/док-станция)": {
+                    "handled_by_id": "rosatom-it-l1",
+                    "escalate_to_id": "rosatom-workplace-lead"
+                },
+                "установить ПО": {
+                    "handled_by_id": "rosatom-it-l2"
+                },
+                "починить сеть/VPN/Wi‑Fi/почту": {
+                    "handled_by_id": "rosatom-it-net",
+                    "escalate_to_id": "rosatom-it-lb"
+                },
+                "устранить инциденты CI/CD/K8s": {
+                    "handled_by_id": "rosatom-it-devops-eng-1",
+                    "escalate_to_id": "rosatom-it-sre-1"
+                },
+                "восстановить из бэкапа": {
+                    "handled_by_id": "rosatom-it-backup"
+                },
+                "выдать инструкции/шаблоны": {
+                    "handled_by_id": "rosatom-it-servicedesk-head"
+                }
+            },
+            "systems": {
+                "Учётки/доступы/безопасность": {
+                    "handled_by_id": "rosatom-it-sys"
+                },
+                "Рабочее место и периферия": {
+                    "handled_by_id": "rosatom-it-l1",
+                    "coord_with_id": "rosatom-workplace-lead"
+                },
+                "M365/Collab (Outlook/Teams/SharePoint/OneDrive/Zoom)": {
+                    "handled_by_id": "rosatom-it-m365"
+                },
+                "Dev/CI/CD/Cloud (Jenkins/GitLab CI/Docker/K8s/Helm/Terraform/Ansible/AWS)": {
+                    "handled_by_id": "rosatom-it-devops-eng-1"
+                },
+                "Мониторинг/логи (Zabbix/Grafana/Prometheus/Splunk)": {
+                    "handled_by_id": "rosatom-it-prom"
+                },
+                "Сети и LB (балансировка, firewall/NAT/порт, Wi‑Fi)": {
+                    "handled_by_id": "rosatom-it-lb"
+                },
+                "VDI/RDP/бастион": {
+                    "handled_by_id": "rosatom-it-vdi"
+                },
+                "Почта/Exchange": {
+                    "handled_by_id": "rosatom-it-exchange"
+                },
+                "Хранилища/файловые сервисы/бэкапы": {
+                    "handled_by_id": "rosatom-it-backup"
+                },
+                "Инструкции/регламенты/KB": {
+                    "handled_by_id": "rosatom-it-servicedesk-head"
+                }
+            }
+        },
+        "Finance": {
+            "actions": {
+                "проверить/сверить/исправить алгоритм": {
+                    "handled_by_id": "rosatom-acc-1c"
+                },
+                "сформировать/выгрузить отчёт/декларацию": {
+                    "handled_by_id": "rosatom-acc-tax"
+                },
+                "настроить налоговые коды/толеранс": {
+                    "handled_by_id": "rosatom-acc-tax"
+                },
+                "оформить платёж/реестр": {
+                    "handled_by_id": "rosatom-treasury-spec"
+                },
+                "выдать справки (фин.)": {
+                    "handled_by_id": "rosatom-acc-senior"
+                },
+                "настроить ЭП/ЭДО": {
+                    "handled_by_id": "rosatom-ep-admin"
+                }
+            },
+            "systems": {
+                "1С (Бух/ЗУП/УТ)": {
+                    "handled_by_id": "rosatom-acc-1c"
+                },
+                "SAP FI/MM / Oracle EBS": {
+                    "handled_by_id": "rosatom-acc-1c"
+                },
+                "ЭДО/отчётность/ЭП (Диадок/СБИС/Контур/СПАРК)": {
+                    "handled_by_id": "rosatom-edo-operator"
+                },
+                "Банки/платежи": {
+                    "handled_by_id": "rosatom-treasury-spec"
+                },
+                "НДС/экспорт/самозанятые/книга покупок/продаж": {
+                    "handled_by_id": "rosatom-acc-tax"
+                }
+            }
+        },
+        "Office": {
+            "actions": {
+                "пропуск (оформить/выдать/заменить/продлить)": {
+                    "handled_by_id": "rosatom-pass-operator"
+                },
+                "парковка (добавить/продлить)": {
+                    "handled_by_id": "rosatom-parking-coord"
+                },
+                "доступ к турникетам/этажам/вне часов": {
+                    "handled_by_id": "rosatom-pass-operator"
+                },
+                "переговорные (бронирование/настройка)": {
+                    "handled_by_id": "rosatom-av-tech",
+                    "coord_with_id": "rosatom-it-m365"
+                },
+                "организовать/перенести рабочее место": {
+                    "handled_by_id": "rosatom-workplace-lead"
+                },
+                "ремонт/замена офисного оборудования": {
+                    "handled_by_id": "rosatom-facility-tech"
+                },
+                "гостевые сервисы (гостевой Wi‑Fi)": {
+                    "handled_by_id": "rosatom-guestwifi-coord",
+                    "coord_with_id": "rosatom-it-net"
+                },
+                "телефония (переадресация/линии)": {
+                    "handled_by_id": "rosatom-telephony"
+                },
+                "поддержка точек сервиса (электронные очереди/ресепшен)": {
+                    "handled_by_id": "rosatom-reception"
+                }
+            },
+            "systems_examples": {
+                "Пропуска и парковка": {
+                    "handled_by_id": "rosatom-pass-operator"
+                },
+                "Переговорные/Outlook интеграция": {
+                    "handled_by_id": "rosatom-av-tech",
+                    "coord_with_id": "rosatom-it-m365"
+                },
+                "Рабочие места/периферия": {
+                    "handled_by_id": "rosatom-workplace-lead",
+                    "coord_with_id": "rosatom-it-l1"
+                }
+            }
+        }
+    }
+}

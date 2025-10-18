@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:16
+    container_name: postgres-db
+    restart: unless-stopped
+
+    # файл реально лежит на уровень выше
+    env_file:
+      - ../.env.development
+
+    # для подстановки ${POSTGRES_PORT} в ports/healthcheck
+    # используем флаг --env-file при запуске (см. команду ниже)
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_data:
