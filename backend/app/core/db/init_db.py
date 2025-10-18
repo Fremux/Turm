@@ -131,7 +131,6 @@ async def initialize_org_nodes(db: AsyncSession):
         logging.error("Organization nodes initialized")
     except SQLAlchemyError as e:
         logging.error("New org nodes not initialized")
-        logging.error(e)
 
 
 async def init_database() -> None:

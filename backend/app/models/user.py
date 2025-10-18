@@ -11,6 +11,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String)
     surname: Mapped[str] = mapped_column(String)
+    patronymic: Mapped[str | None] = mapped_column(String, nullable=True)
     email: Mapped[str] = mapped_column(String)
     organization: Mapped[str] = mapped_column(String)
     role: Mapped[str] = mapped_column(String)
