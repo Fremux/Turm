@@ -15,5 +15,7 @@ class Settings(BaseSettings):
 
     KAFKA_HOSTS: str
 
+    DEMO_MODE: bool = True
+
 
 settings = Settings()

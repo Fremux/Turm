@@ -38,12 +38,9 @@ def value_serializer(obj: Optional[Any]):
     if obj is None:
         return None
 
-    return json.dumps(
-        obj,
-        ensure_ascii=False,
-        separators=(',', ':'),
-        default=_default
-    ).encode("UTF-8")
+    return json.dumps(obj, ensure_ascii=False, separators=(",", ":"), default=_default).encode(
+        "UTF-8"
+    )
 
 
 def value_deserializer(value: Optional[bytes]):
@@ -54,20 +51,24 @@ def value_deserializer(value: Optional[bytes]):
 
 @lru_cache()
 def producer():
-    return AIOKafkaProducer(bootstrap_servers=settings.KAFKA_HOSTS.split(","),
-                            key_serializer=key_serializer,
-                            value_serializer=value_serializer)
+    return AIOKafkaProducer(
+        bootstrap_servers=settings.KAFKA_HOSTS.split(","),
+        key_serializer=key_serializer,
+        value_serializer=value_serializer,
+    )
 
 
 @lru_cache()
 def consumer():
-    return AIOKafkaConsumer(TOPIC_NAME,
-                            bootstrap_servers=settings.KAFKA_HOSTS.split(","),
-                            group_id=GROUP_ID,
-                            enable_auto_commit=False,
-                            auto_offset_reset="earliest",
-                            key_deserializer=key_deserializer,
-                            value_deserializer=value_deserializer)
+    return AIOKafkaConsumer(
+        TOPIC_NAME,
+        bootstrap_servers=settings.KAFKA_HOSTS.split(","),
+        group_id=GROUP_ID,
+        enable_auto_commit=False,
+        auto_offset_reset="earliest",
+        key_deserializer=key_deserializer,
+        value_deserializer=value_deserializer,
+    )
 
 
 async def producer_start():

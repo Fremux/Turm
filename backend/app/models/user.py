@@ -7,8 +7,8 @@ from models.base import Base
 
 
 class User(Base):
-    __tablename__ = 'user'
-    id: Mapped[int] = mapped_column(primary_key=True, auto_increment=True)
+    __tablename__ = "user"
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String)
     surname: Mapped[str] = mapped_column(String)
     email: Mapped[str] = mapped_column(String)

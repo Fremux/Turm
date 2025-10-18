@@ -20,14 +20,14 @@ async def lifespan(_: FastAPI):
     await consumer_stop()
     await producer_stop()
 
-app = FastAPI(debug=settings.SERVER_TEST,
-              lifespan=lifespan,
-              title="GoraSLavoy",)
 
-app.add_middleware(
-    GZipMiddleware,
-    minimum_size=2000
+app = FastAPI(
+    debug=settings.SERVER_TEST,
+    lifespan=lifespan,
+    title="GoraSLavoy",
 )
+
+app.add_middleware(GZipMiddleware, minimum_size=2000)
 
 origins = ["*"]
 
