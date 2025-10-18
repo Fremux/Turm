@@ -1,5 +1,5 @@
 from sqlalchemy import select, update, insert, delete, literal
-from models.user import User
+from models.user import UserInfo
 from models.organizations import OrgNode
 from core.db import AsyncSession
 from typing import List
@@ -19,7 +19,7 @@ async def create_user(name: str,
                       description: str,
                       db: AsyncSession) -> int:
     stmt = (
-        insert(User)
+        insert(UserInfo)
         .values(
             name=name,
             surname=surname,
@@ -32,7 +32,7 @@ async def create_user(name: str,
             birth_date=birth_date,
             description=description,
         )
-        .returning(User.id)
+        .returning(UserInfo.id)
     )
 
     result = await db.execute(stmt)
@@ -45,7 +45,7 @@ async def create_user(name: str,
 async def get_user_by_id(user_id: int,
                          db: AsyncSession):
     """Get full user info by user id"""
-    stmt = select(User, OrgNode).where(User.id == literal(user_id)).join(OrgNode, OrgNode.id == User.role_id)
+    stmt = select(UserInfo, OrgNode).where(UserInfo.id == literal(user_id)).join(OrgNode, OrgNode.id == UserInfo.role_id)
     res = await db.execute(stmt)
 
     return res.fetchone()
@@ -57,12 +57,12 @@ async def get_all_user_with_filtration(db: AsyncSession,
                                        command: str | None = None,
                                        role_title: str | None = None) -> List[GetUserDTO]:
     """Get all users with filtration"""
-    stmt = select(User, OrgNode).join(OrgNode, User.role_id == OrgNode.id).limit(limit).offset(offset)
+    stmt = select(UserInfo, OrgNode).join(OrgNode, UserInfo.role_id == OrgNode.id).limit(limit).offset(offset)
 
     if role_title is not None:
         stmt = stmt.where(OrgNode.id == literal(role_title))
     if command is not None:
-        stmt = stmt.where(User.command == literal(command))
+        stmt = stmt.where(UserInfo.command == literal(command))
 
     result = await db.execute(stmt)
     result = result.all()
@@ -94,7 +94,7 @@ async def update_user(user_id: int | None,
                       description: str | None,
                       db: AsyncSession) -> None:
     """Update user"""
-    stmt = update(User).where(User.id == literal(user_id))
+    stmt = update(UserInfo).where(UserInfo.id == literal(user_id))
 
     if name is not None:
         stmt = stmt.values(name=name)
@@ -124,6 +124,6 @@ async def update_user(user_id: int | None,
 async def delete_user(user_id: int,
                       db: AsyncSession):
     """Delete user by its id"""
-    stmt = delete(User).where(User.id == literal(user_id))
+    stmt = delete(UserInfo).where(UserInfo.id == literal(user_id))
     await db.execute(stmt)
     await db.commit()

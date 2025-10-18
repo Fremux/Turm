@@ -1,27 +1,56 @@
-from sqlalchemy import String, TIMESTAMP, ForeignKey, Float
-from sqlalchemy.orm import mapped_column, Mapped
-from datetime import datetime
-from typing import List, Optional
-from sqlalchemy.dialects.postgresql import JSONB
-from models.base import Base
+"""This file contains the user model for the application."""
+
+from typing import (
+    TYPE_CHECKING,
+    List,
+)
+
+import bcrypt
+from sqlmodel import (
+    Field,
+    Relationship,
+)
+
+from models.base import BaseModel
+
+if TYPE_CHECKING:
+    from models.session import Session
+    from models.entity import UserEntity
+    from models.agent_analysis import AgentAnalysis
 
 
-class User(Base):
-    __tablename__ = "user"
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String)
-    surname: Mapped[str] = mapped_column(String)
-    patronymic: Mapped[str | None] = mapped_column(String, nullable=True)
-    email: Mapped[str] = mapped_column(String)
-    command: Mapped[str] = mapped_column(String)
-    role_id: Mapped[str] = mapped_column(String, ForeignKey("org_nodes.id"))
-    tags: Mapped[List[str]] = mapped_column(JSONB, nullable=False, server_default="{}")
-    birth_date: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)
-    description: Mapped[str] = mapped_column(String)
-    organization: Mapped[str] = mapped_column(String)
-    user_id: Mapped[int] = mapped_column(foreign_key="user.id", index=True)
-    session_id: Mapped[str] = mapped_column(String, index=True)
-    entity_type: Mapped[str] = mapped_column(String, index=True)
-    entity_value: Mapped[str] = mapped_column(String(500))
-    context: Mapped[Optional[str]] = mapped_column(String(1000), default=None, nullable=True)
-    confidence: Mapped[float] = mapped_column(Float, default=1.0)
+class User(BaseModel, table=True):
+    """User model for storing user accounts.
+
+    Attributes:
+        id: The primary key
+        username: User's username (unique)
+        hashed_password: Bcrypt hashed password
+        created_at: When the user was created
+        sessions: Relationship to user's chat sessions
+        entities: Relationship to extracted user entities
+        agent_analyses: Relationship to agent analysis results
+    """
+
+    id: int = Field(default=None, primary_key=True)
+    username: str = Field(unique=True, index=True)
+    hashed_password: str
+    sessions: List["Session"] = Relationship(back_populates="user")
+    entities: List["UserEntity"] = Relationship(back_populates="user")
+    agent_analyses: List["AgentAnalysis"] = Relationship(back_populates="user")
+
+    def verify_password(self, password: str) -> bool:
+        """Verify if the provided password matches the hash."""
+        return bcrypt.checkpw(password.encode("utf-8"), self.hashed_password.encode("utf-8"))
+
+    @staticmethod
+    def hash_password(password: str) -> str:
+        """Hash a password using bcrypt."""
+        salt = bcrypt.gensalt()
+        return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
+
+
+# Avoid circular imports
+from models.session import Session  # noqa: E402
+from models.entity import UserEntity  # noqa: E402
+from models.agent_analysis import AgentAnalysis  # noqa: E402
