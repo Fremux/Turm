@@ -1,17 +1,19 @@
 from sqlalchemy import select, update, insert, delete, literal
 from models.user import User
+from models.organizations import OrgNode
 from core.db import AsyncSession
 from typing import List
 from datetime import datetime
+from schemas.user import GetUserDTO
 
 
 async def create_user(name: str,
                       surname: str,
                       patronymic: str | None,
                       email: str,
+                      command: str,
                       organization: str,
-                      role: str,
-                      sector: str,
+                      role_id: str,
                       tags: List[str],
                       birth_date: datetime,
                       description: str,
@@ -22,16 +24,17 @@ async def create_user(name: str,
             name=name,
             surname=surname,
             patronymic=patronymic,
-            email=email,
             organization=organization,
-            role=role,
-            sector=sector,
+            email=email,
+            role_id=role_id,
+            command=command,
             tags=tags,
             birth_date=birth_date,
             description=description,
         )
         .returning(User.id)
     )
+
     result = await db.execute(stmt)
     user_id = result.scalar()
     await db.commit()
@@ -40,11 +43,42 @@ async def create_user(name: str,
 
 
 async def get_user_by_id(user_id: int,
-                         db: AsyncSession) -> User | None:
-    stmt = select(User).where(User.id == literal(user_id))
+                         db: AsyncSession):
+    """Get full user info by user id"""
+    stmt = select(User, OrgNode).where(User.id == literal(user_id)).join(OrgNode, OrgNode.id == User.role_id)
     res = await db.execute(stmt)
 
-    return res.scalar_one_or_none()
+    return res.fetchone()
+
+
+async def get_all_user_with_filtration(db: AsyncSession,
+                                       limit: int,
+                                       offset: int,
+                                       command: str | None = None,
+                                       role_title: str | None = None) -> List[GetUserDTO]:
+    """Get all users with filtration"""
+    stmt = select(User, OrgNode).join(OrgNode, User.role_id == OrgNode.id).limit(limit).offset(offset)
+
+    if role_title is not None:
+        stmt = stmt.where(OrgNode.id == literal(role_title))
+    if command is not None:
+        stmt = stmt.where(User.command == literal(command))
+
+    result = await db.execute(stmt)
+    result = result.all()
+
+    return [GetUserDTO(id=r[0].id,
+                       name=r[0].name,
+                       surname=r[0].surname,
+                       patronymic=r[0].patronymic,
+                       email=r[0].email,
+                       organization=r[0].organization,
+                       role=r[1].title,
+                       role_id=r[1].id,
+                       command=r[0].command,
+                       tags=r[0].tags,
+                       birth_date=r[0].birth_date,
+                       description=r[0].description,) for r in result]
 
 
 async def update_user(user_id: int | None,

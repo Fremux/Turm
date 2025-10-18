@@ -4,7 +4,6 @@ from typing import List
 import crud.organizations as organizations_crud
 from schemas.organizations import GetAllUnitTypesResponse, GetAllNodesResponse
 from schemas.enum import UnitType
-import logging
 
 
 router = APIRouter()

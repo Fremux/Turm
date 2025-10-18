@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import List
 from schemas.enum import UnitType
+from dataclasses import dataclass
 
 
 class OrgNodeInfo(BaseModel):
@@ -16,15 +17,15 @@ class GetUserResponse(BaseModel):
     id: int
     name: str
     surname: str
+    command: str
     patronymic: str | None
     email: str
     organization: str
     role: str
-    sector: str
+    role_id: str
     tags: List[str]
     birth_date: datetime
     description: str
-    org_node: OrgNodeInfo
 
 
 class CreateUserResponse(BaseModel):
@@ -37,8 +38,8 @@ class CreateUserRequest(BaseModel):
     patronymic: str | None
     email: str
     organization: str
-    role: str
-    sector: str
+    command: str
+    role_id: str
     tags: List[str]
     birth_date: datetime
     description: str | None = "Описание пользователя пока не заполнено"
@@ -50,7 +51,9 @@ class UpdateUserRequest(BaseModel):
     patronymic: str | None
     email: str
     organization: str
+    command: str
     role: str
+    role_id: str
     sector: str
     tags: List[str]
     birth_date: datetime
@@ -61,10 +64,28 @@ class GetAllUserResponse(BaseModel):
     id: int
     name: str
     surname: str
+    patronymic: str
     email: str
     organization: str
     role: str
-    sector: str
+    role_id: str
+    command: str
+    tags: List[str]
+    birth_date: datetime
+    description: str
+
+
+@dataclass
+class GetUserDTO:
+    id: int
+    name: str
+    surname: str
+    patronymic: str
+    email: str
+    organization: str
+    role: str
+    role_id: str
+    command: str
     tags: List[str]
     birth_date: datetime
     description: str
