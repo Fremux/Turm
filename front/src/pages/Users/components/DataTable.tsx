@@ -52,11 +52,8 @@ export function DataTable({ data }: { data: AnyRow[] }) {
                             </Badge>
                         );
                     }
-
                     const headerId = ctx.column.id || "";
-                    const isFio =
-                        /fio|name|фио/i.test(headerId) || /full.?name/i.test(headerId);
-
+                    const isFio = /fio|name|фио/i.test(headerId) || /full.?name/i.test(headerId);
                     return <Text fontWeight={isFio ? "semibold" : "normal"}>{stringifyValue(value)}</Text>;
                 },
             })
@@ -80,71 +77,58 @@ export function DataTable({ data }: { data: AnyRow[] }) {
         );
     }
 
-    const colCount = table.getAllColumns().length;
+    const rows = table.getRowModel().rows;
 
     return (
-        <Table.Root
-            size="lg"
-            w="100%"
-            border="none"
-            boxShadow="none"
-            bg="transparent"
-        >
-            {/* Шапка: без фона/бордеров */}
-            <Table.Header bg="transparent">
-                {table.getHeaderGroups().map((hg) => (
-                    <Table.Row key={hg.id}>
-                        {hg.headers.map((header) => (
-                            <Table.ColumnHeader
-                                key={header.id}
-                                cursor="default"
-                                userSelect="none"
-                                fontWeight="semibold"
-                                color="grey.600"
-                                py="4"
-                            >
-                                {flexRender(header.column.columnDef.header, header.getContext())}
-                            </Table.ColumnHeader>
-                        ))}
-                    </Table.Row>
-                ))}
-                {/* разделитель под шапкой */}
-                <Table.Row>
-                    <Table.ColumnHeader colSpan={colCount} p="0">
-                        <Box h="1px" bg="grey.200" mx="2" />
-                    </Table.ColumnHeader>
-                </Table.Row>
-            </Table.Header>
-
-            <Table.Body bg="transparent">
-                {table.getRowModel().rows.map((row) => {
-                    // безопасно достаём id
-                    const rid =
-                        (row.original as AnyRow)?.id ??
-                        (row.getAllCells().find((c) => c.column.id === "id")?.getValue() as unknown);
-
-                    return (
-                        <Box as={Table.Row}
-                            key={row.id}
-                            // кликабельная строка
-                            onClick={() => (rid != null ? navigate(`/chat/${rid}`) : null)}
-                            cursor={rid != null ? "pointer" : "default"}
-                            _hover={{ bg: "transparent" }}
-                            border="none"
-                        >
-                            {row.getVisibleCells().map((cell) => (
-                                <Table.Cell key={cell.id} py="5" border="none">
-                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                </Table.Cell>
+        <Box bg="white" borderRadius="2xl" overflow="hidden" h='70vh'>
+            <Table.Root size="lg" w="100%" border="none" boxShadow="none" bg="transparent" tableLayout="fixed">
+                <Table.Header bg="transparent">
+                    {table.getHeaderGroups().map((hg) => (
+                        <Table.Row key={hg.id}>
+                            {hg.headers.map((header) => (
+                                <Table.ColumnHeader
+                                    key={header.id}
+                                    cursor="default"
+                                    userSelect="none"
+                                    fontWeight="semibold"
+                                    color="grey.600"
+                                    py="4"
+                                    borderBottomWidth="3px"
+                                    borderColor="#D7D5E9"
+                                >
+                                    {flexRender(header.column.columnDef.header, header.getContext())}
+                                </Table.ColumnHeader>
                             ))}
-                            {/* разделитель строки */}
-                            <Table.Cell colSpan={colCount} p="0" border="none">
-                                <Box h="1px" bg="grey.200" mx="2" />
-                            </Table.Cell>
-                        </Box>
-                    );
-                })}
-            </Table.Body>
-        </Table.Root>
+                        </Table.Row>
+                    ))}
+                </Table.Header>
+
+                <Table.Body bg="transparent">
+                    {rows.map((row, idx) => {
+                        const last = idx === rows.length - 1;
+                        const rid =
+                            (row.original as AnyRow)?.id ??
+                            (row.getAllCells().find((c) => c.column.id === "id")?.getValue() as unknown);
+
+                        return (
+                            <Table.Row
+                                key={row.id}
+                                onClick={() => (rid != null ? navigate(`/chat/${rid}`) : undefined)}
+                                cursor={rid != null ? "pointer" : "default"}
+                                _hover={{ bg: "#F5F4FC" }}
+                                borderBottomWidth={last ? "0px" : "1px"}
+                                borderColor="grey.200"
+                            >
+                                {row.getVisibleCells().map((cell) => (
+                                    <Table.Cell key={cell.id} py="5" border="none">
+                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                    </Table.Cell>
+                                ))}
+                            </Table.Row>
+                        );
+                    })}
+                </Table.Body>
+            </Table.Root>
+        </Box>
     );
 }

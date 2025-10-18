@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Box, Center, Spinner, Text } from "@chakra-ui/react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Layout } from "./shared/ui/Layout";
+// import { Layout } from "./shared/ui/Layout";
 
 const Users = lazy(() => import("./pages/Users/Users"));
 const Chat = lazy(() => import("./pages/Chat/Chat"));
@@ -9,7 +9,7 @@ const Chat = lazy(() => import("./pages/Chat/Chat"));
 export default function App() {
   return (
     <BrowserRouter>
-      <Layout>
+      {/* <Layout> */}
         <Suspense
           fallback={
             <Box p={8}>
@@ -29,7 +29,8 @@ export default function App() {
               }
             />
           </Routes>
-        </Suspense></Layout>
+        </Suspense>
+      {/* </Layout> */}
     </BrowserRouter>
   );
 }

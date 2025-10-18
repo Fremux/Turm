@@ -8,9 +8,9 @@ export const Layout = ({ children }: { children: ReactNode }) => (
         direction="column"
         justify="center"
         align="center"
-        style={{ position: 'relative', overflow: 'hidden' }}
         backgroundColor={'gray.100'}
         zIndex={0}
+        overflow='hidden'
     >
         <div
             style={{
