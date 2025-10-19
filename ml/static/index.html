@@ -2,10 +2,21 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Chatbot</title>
     <style>
+        :root {
+            --bg: #f3f5fa;
+            --surface: #ffffff;
+            --text: #0b1426;
+            --muted: #6b7280;
+            --line: #e5e7eb;
+            --bubble: #eceff5;
+            --accent: #3167f0;
+            --accent-600: #2558e3;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,27 +24,94 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-            background: linear-gradient(135deg, #0a0f0d 0%, #1a2f23 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+                'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: var(--bg);
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            color: var(--text);
         }
 
         .container {
             width: 95%;
             max-width: 1400px;
             height: 90vh;
-            background: #1a1f1e;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            background: var(--bg);
+            border-radius: 24px;
+            padding: 16px;
             display: flex;
-            overflow: hidden;
-            border: 1px solid #2d3d35;
         }
 
-        /* Auth Page */
+        .layout {
+            display: grid;
+            grid-template-columns: 320px 1fr 320px;
+            gap: 16px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar.card,
+        .chat-area.card,
+        .entities-panel.card {}
+
+        .sidebar,
+        .chat-area,
+        .entities-panel {
+            background: transparent;
+        }
+
+        .sidebar-header,
+        .chat-header,
+        .entities-header {
+            position: relative;
+            padding: 20px;
+            background: var(--surface);
+        }
+
+        .sidebar-header::after,
+        .chat-header::after,
+        .entities-header::after {
+            content: '';
+            position: absolute;
+            left: 20px;
+            right: 20px;
+            bottom: 0;
+            height: 1px;
+            background: var(--line);
+        }
+
+        .sessions-list,
+        .messages-container,
+        .collections-container,
+        .entities-list {
+            background: var(--surface);
+        }
+
+        .tab-navigation {
+            background: var(--surface);
+            position: relative;
+        }
+
+        .tab-navigation::after {
+            content: '';
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            bottom: 0;
+            height: 1px;
+            background: var(--line);
+        }
+
         .auth-page {
             width: 100%;
             height: 100%;
@@ -42,88 +120,77 @@
             justify-content: center;
             align-items: center;
             padding: 40px;
-            background: #1a1f1e;
+            background: var(--surface);
         }
 
         .auth-page h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: #10b981;
-            text-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            color: var(--text);
+            font-weight: 800;
         }
 
         .auth-tabs {
             display: flex;
-            gap: 10px;
-            margin: 30px 0;
+            gap: 8px;
+            margin: 24px 0;
         }
 
         .auth-tabs button {
-            padding: 10px 30px;
+            padding: 10px 20px;
             border: none;
-            background: #2d3d35;
-            color: #94a3b8;
+            border-radius: 999px;
+            background: var(--bubble);
+            color: var(--muted);
             cursor: pointer;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.3s;
         }
 
         .auth-tabs button.active {
-            background: #10b981;
-            color: #ffffff;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            background: var(--accent);
+            color: #fff;
         }
 
         .auth-form {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
         }
 
         .auth-form input {
             width: 100%;
-            padding: 15px;
+            padding: 14px 16px;
             margin: 10px 0;
-            border: 2px solid #2d3d35;
-            background: #0f1514;
-            color: #e2e8f0;
-            border-radius: 8px;
+            border: none;
+            border-radius: 12px;
+            background: var(--bubble);
+            color: var(--text);
             font-size: 1rem;
-            transition: all 0.3s;
         }
 
         .auth-form input:focus {
-            outline: none;
-            border-color: #10b981;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+            outline: 2px solid var(--accent);
         }
 
         .auth-form button {
             width: 100%;
-            padding: 15px;
-            margin-top: 20px;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
+            padding: 14px 18px;
+            margin-top: 16px;
             border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
+            border-radius: 12px;
+            background: var(--accent);
+            color: #fff;
+            font-size: 1.05rem;
             cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
         }
 
         .auth-form button:hover {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+            background: var(--accent-600);
         }
 
         .error-message {
-            color: #f87171;
-            background: rgba(239, 68, 68, 0.1);
+            color: #b91c1c;
+            background: #fee2e2;
             padding: 10px;
-            border-radius: 6px;
-            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 8px;
             margin: 10px 0;
             text-align: center;
         }
@@ -133,58 +200,64 @@
         }
 
         .success-message {
-            color: #34d399;
-            background: rgba(16, 185, 129, 0.1);
+            color: #065f46;
+            background: #d1fae5;
             padding: 10px;
-            border-radius: 6px;
-            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 8px;
             margin: 10px 0;
             text-align: center;
         }
 
-        /* Sidebar */
+        /* -------------------- Sidebar -------------------- */
         .sidebar {
             width: 320px;
-            background: #0f1514;
-            border-right: 1px solid #2d3d35;
+            background: var(--surface);
             display: flex;
             flex-direction: column;
         }
 
         .sidebar-header {
             padding: 20px;
-            border-bottom: 1px solid #2d3d35;
+            position: relative;
+        }
+
+        .sidebar-header::after {
+            content: '';
+            display: block;
+            height: 1px;
+            background: var(--line);
+            position: absolute;
+            left: 20px;
+            right: 20px;
+            bottom: 0;
         }
 
         .sidebar-header h2 {
-            margin-bottom: 10px;
-            color: #10b981;
-            font-size: 1.3rem;
+            margin-bottom: 8px;
+            color: var(--text);
+            font-size: 1.1rem;
+            font-weight: 800;
         }
 
         .user-email {
             font-size: 0.9rem;
-            color: #94a3b8;
+            color: var(--muted);
         }
 
         .new-session-btn {
             width: 100%;
             padding: 12px;
-            margin-top: 15px;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
+            margin-top: 12px;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
+            background: var(--accent);
+            color: #fff;
             cursor: pointer;
             font-size: 1rem;
-            transition: all 0.3s;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
 
         .new-session-btn:hover {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+            background: var(--accent-600);
         }
 
         .sessions-list {
@@ -195,65 +268,53 @@
 
         .session-item {
             padding: 12px;
-            margin: 5px 0;
-            background: #1a1f1e;
-            border: 1px solid #2d3d35;
-            border-radius: 8px;
+            margin: 6px 0;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            color: #e2e8f0;
+            background: var(--bubble);
+            color: var(--text);
         }
 
         .session-item:hover {
-            background: #232b28;
-            border-color: #10b981;
+            filter: brightness(0.98);
         }
 
         .session-item.active {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            border-color: #10b981;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            background: #eff6ff;
+            color: black;
         }
 
         .session-actions {
             display: flex;
-            gap: 5px;
+            gap: 6px;
         }
 
         .session-actions button {
-            padding: 5px 10px;
+            padding: 6px 10px;
             border: none;
             background: transparent;
             cursor: pointer;
-            font-size: 1rem;
-            border-radius: 4px;
-            transition: all 0.3s;
+            border-radius: 8px;
+            color: inherit;
         }
 
-        .session-actions button:hover {
-            background: rgba(16, 185, 129, 0.2);
+        .session-actions:hover {
+            background: transparent;
         }
 
         .logout-btn {
-            padding: 15px;
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: white;
+            padding: 14px;
             border: none;
+            background: var(--bubble);
+            color: var(--text);
             cursor: pointer;
             font-size: 1rem;
-            transition: all 0.3s;
-            border-top: 1px solid #2d3d35;
         }
 
-        .logout-btn:hover {
-            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-        }
-
-        /* Chat Area */
+        /* -------------------- Chat Area -------------------- */
         .chat-area {
             flex: 1;
             display: flex;
@@ -263,43 +324,53 @@
 
         .chat-header {
             padding: 20px;
-            border-bottom: 1px solid #2d3d35;
+            background: var(--surface);
+            position: relative;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #0f1514;
+        }
+
+        .chat-header::after {
+            content: '';
+            display: block;
+            height: 1px;
+            background: var(--line);
+            position: absolute;
+            left: 20px;
+            right: 20px;
+            bottom: 0;
         }
 
         .chat-header h2 {
-            color: #10b981;
-            font-size: 1.4rem;
+            color: var(--text);
+            font-size: 1.2rem;
+            font-weight: 800;
         }
 
         .clear-btn {
-            padding: 8px 15px;
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: white;
+            padding: 10px 14px;
             border: none;
-            border-radius: 6px;
+            border-radius: 12px;
+            background: var(--bubble);
+            color: var(--text);
             cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.3s;
+            font-size: 0.95rem;
         }
 
         .clear-btn:hover {
-            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-            transform: translateY(-2px);
+            filter: brightness(0.97);
         }
 
         .messages-container {
             flex: 1;
             overflow-y: auto;
             padding: 20px;
-            background: #1a1f1e;
+            background: var(--surface);
         }
 
         .message {
-            margin: 15px 0;
+            margin: 14px 0;
             display: flex;
             gap: 10px;
         }
@@ -310,155 +381,93 @@
 
         .message-content {
             max-width: 70%;
-            padding: 15px;
-            border-radius: 12px;
-            line-height: 1.5;
+            padding: 14px;
+            border-radius: 16px;
+            line-height: 1.55;
+            background: var(--bubble);
+            color: var(--text);
         }
 
         .message.user .message-content {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            background: var(--bubble);
+            color: var(--text);
         }
 
         .message.assistant .message-content {
-            background: #0f1514;
-            color: #e2e8f0;
-            border: 1px solid #2d3d35;
-        }
-
-        .classification-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            margin-top: 8px;
-        }
-
-        .classification-badge.hr {
-            background: rgba(168, 85, 247, 0.2);
-            color: #c084fc;
-            border: 1px solid rgba(168, 85, 247, 0.3);
-        }
-
-        .classification-badge.it {
-            background: rgba(59, 130, 246, 0.2);
-            color: #93c5fd;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-        }
-
-        .classification-badge.finance {
-            background: rgba(16, 185, 129, 0.2);
-            color: #6ee7b7;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-
-        .classification-badge.office {
-            background: rgba(245, 158, 11, 0.2);
-            color: #fcd34d;
-            border: 1px solid rgba(245, 158, 11, 0.3);
-        }
-
-        .classification-badge.other {
-            background: rgba(148, 163, 184, 0.2);
-            color: #cbd5e1;
-            border: 1px solid rgba(148, 163, 184, 0.3);
-        }
-
-        /* Intent classification badges */
-        .intent-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            margin-top: 8px;
-            margin-left: 8px;
-        }
-
-        .intent-badge.access_request {
-            background: rgba(236, 72, 153, 0.2);
-            color: #f9a8d4;
-            border: 1px solid rgba(236, 72, 153, 0.3);
-        }
-
-        .intent-badge.information_request {
-            background: rgba(14, 165, 233, 0.2);
-            color: #7dd3fc;
-            border: 1px solid rgba(14, 165, 233, 0.3);
-        }
-
-        .intent-badge.problem_solving {
-            background: rgba(239, 68, 68, 0.2);
-            color: #fca5a5;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-
-        .intent-badge.other {
-            background: rgba(156, 163, 175, 0.2);
-            color: #d1d5db;
-            border: 1px solid rgba(156, 163, 175, 0.3);
+            background: var(--bubble);
+            color: var(--text);
         }
 
         .classifications-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 5px;
+            gap: 6px;
             margin-top: 8px;
         }
 
+        .classification-badge,
+        .intent-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: var(--bubble);
+            color: var(--muted);
+        }
+
+        .intent-badge {
+            margin-left: 6px;
+        }
+
+        /* Блок «назначение роли» — плоский */
         .role-assignment {
             margin-top: 12px;
             padding: 12px;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            border-radius: 8px;
+            border-radius: 12px;
+            background: #f6f8fc;
         }
 
         .role-assignment-title {
-            font-weight: 600;
-            color: #10b981;
-            margin-bottom: 8px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
             font-size: 0.85rem;
         }
 
         .role-info {
             margin: 6px 0;
             padding: 8px;
-            background: rgba(16, 185, 129, 0.05);
-            border-radius: 6px;
+            border-radius: 10px;
+            background: #f8fafd;
         }
 
         .role-info-label {
-            font-weight: 600;
-            color: #6ee7b7;
+            font-weight: 700;
+            color: var(--muted);
             font-size: 0.75rem;
             text-transform: uppercase;
             margin-bottom: 4px;
         }
 
         .role-info-title {
-            color: #e2e8f0;
-            font-size: 0.9rem;
-            font-weight: 500;
+            color: var(--text);
+            font-size: 0.95rem;
+            font-weight: 600;
         }
 
         .role-info-position {
-            color: #94a3b8;
-            font-size: 0.8rem;
+            color: var(--muted);
+            font-size: 0.85rem;
             font-style: italic;
         }
 
         .role-info-path {
-            color: #64748b;
-            font-size: 0.75rem;
+            color: #9ca3af;
+            font-size: 0.8rem;
             margin-top: 4px;
         }
 
@@ -466,51 +475,52 @@
             padding: 2px 6px;
             border-radius: 8px;
             font-size: 0.7rem;
-            font-weight: bold;
+            font-weight: 800;
+            background: var(--bubble);
+            color: var(--text);
         }
 
         .priority-badge.urgent {
-            background: #dc2626;
-            color: white;
+            background: #fee2e2;
+            color: #7f1d1d;
         }
 
         .priority-badge.high {
-            background: #f97316;
-            color: white;
+            background: #fff7ed;
+            color: #9a3412;
         }
 
         .priority-badge.medium {
-            background: #eab308;
-            color: #1f2937;
+            background: #fef9c3;
+            color: #78350f;
         }
 
         .priority-badge.low {
-            background: #64748b;
-            color: white;
+            background: #f1f5f9;
+            color: #0f172a;
         }
 
         .classification-reasoning {
             display: block;
             margin-top: 8px;
             padding: 8px 12px;
-            background: rgba(16, 185, 129, 0.1);
-            border-left: 3px solid #10b981;
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 12px;
-            color: #9ca3af;
+            color: #6b7280;
+            background: #f6f8fc;
             font-style: italic;
         }
 
         .classification-loading {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             padding: 4px 10px;
             margin-top: 8px;
-            border-radius: 12px;
+            border-radius: 999px;
             font-size: 0.75rem;
-            background: rgba(107, 114, 128, 0.2);
-            color: #9ca3af;
+            background: #f1f5f9;
+            color: #6b7280;
             animation: pulse 1.5s ease-in-out infinite;
         }
 
@@ -518,7 +528,7 @@
 
             0%,
             100% {
-                opacity: 0.6;
+                opacity: 0.7;
             }
 
             50% {
@@ -526,137 +536,123 @@
             }
         }
 
-        /* Toast notifications */
+        /* Toast — без тени и без бордеров */
         .toast {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            padding: 15px 20px;
-            background: #1a1f1e;
-            border: 1px solid #2d3d35;
-            border-radius: 8px;
-            color: #e2e8f0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            padding: 12px 16px;
+            background: var(--surface);
+            border-radius: 12px;
+            color: var(--text);
             z-index: 10000;
-            animation: slideIn 0.3s ease-out;
             max-width: 300px;
         }
 
         .toast.success {
-            border-left: 4px solid #10b981;
+            outline: 2px solid #c7d2fe;
         }
 
         .toast.error {
-            border-left: 4px solid #ef4444;
+            outline: 2px solid #fecaca;
         }
 
         .toast.info {
-            border-left: 4px solid #3b82f6;
+            outline: 2px solid #bfdbfe;
         }
 
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes slideOut {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-
-            to {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-        }
-
+        /* Ввод */
         .input-area {
-            padding: 20px;
-            border-top: 1px solid #2d3d35;
+            padding: 16px;
             display: flex;
             gap: 10px;
-            background: #0f1514;
+            background: var(--surface);
+            position: relative;
+        }
+
+        .input-area::before {
+            content: '';
+            display: block;
+            height: 1px;
+            background: var(--line);
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            top: 0;
         }
 
         .input-area input {
             flex: 1;
-            padding: 15px;
-            border: 2px solid #2d3d35;
-            background: #1a1f1e;
-            color: #e2e8f0;
-            border-radius: 8px;
+            padding: 14px 16px;
+            border: none;
+            border-radius: 14px;
+            background: var(--bubble);
+            color: var(--text);
             font-size: 1rem;
-            transition: all 0.3s;
         }
 
         .input-area input:focus {
-            outline: none;
-            border-color: #10b981;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+            outline: 2px solid var(--accent);
         }
 
         .input-area button {
-            padding: 15px 30px;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
+            padding: 14px 18px;
             border: none;
-            border-radius: 8px;
+            border-radius: 14px;
+            background: var(--accent);
+            color: #fff;
             cursor: pointer;
             font-size: 1rem;
-            transition: all 0.3s;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
 
         .input-area button:hover:not(:disabled) {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+            background: var(--accent-600);
+            transform: none;
         }
 
         .input-area button:disabled {
-            background: #2d3d35;
+            background: #dce3f8;
+            color: #94a3b8;
             cursor: not-allowed;
-            box-shadow: none;
-            color: #64748b;
         }
 
+        /* Плейсхолдеры */
+        input::placeholder {
+            color: #9ca3af;
+            opacity: 1;
+        }
+
+        /* Пустое состояние */
         .empty-state {
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100%;
-            color: #64748b;
-            background: #1a1f1e;
+            color: #94a3b8;
+            background: var(--surface);
         }
 
         .empty-state h3 {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
+            font-size: 1.3rem;
+            margin-bottom: 8px;
         }
 
+        /* Лоадер */
         .loading {
             text-align: center;
-            padding: 20px;
+            padding: 16px;
             color: #94a3b8;
         }
 
         .loading-spinner {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(16, 185, 129, 0.3);
+            width: 18px;
+            height: 18px;
+            border: 3px solid #dce3f8;
             border-radius: 50%;
-            border-top-color: #10b981;
-            animation: spin 1s ease-in-out infinite;
+            border-top-color: var(--accent);
+            animation: spin 1s linear infinite;
         }
 
         @keyframes spin {
@@ -680,117 +676,122 @@
             height: 100%;
         }
 
-        /* Rename form */
+        /* Переименование */
         .rename-form {
             padding: 10px;
-            background: #0f1514;
-            border: 1px solid #2d3d35;
-            border-radius: 8px;
-            margin: 5px 0;
+            background: #f8fafd;
+            border-radius: 12px;
+            margin: 6px 0;
         }
 
         .rename-form input {
             width: 100%;
-            padding: 8px;
-            margin-bottom: 5px;
-            border: 2px solid #2d3d35;
-            background: #1a1f1e;
-            color: #e2e8f0;
-            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 6px;
+            border: none;
+            border-radius: 10px;
+            background: var(--bubble);
+            color: var(--text);
         }
 
         .rename-form input:focus {
-            outline: none;
-            border-color: #10b981;
+            outline: 2px solid var(--accent);
         }
 
         .rename-form-buttons {
             display: flex;
-            gap: 5px;
+            gap: 6px;
         }
 
         .rename-form button {
             flex: 1;
-            padding: 6px;
+            padding: 8px;
             border: none;
-            border-radius: 4px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.3s;
         }
 
         .rename-form .save-btn {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
+            background: var(--accent);
+            color: #fff;
         }
 
         .rename-form .save-btn:hover {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            background: var(--accent-600);
         }
 
         .rename-form .cancel-btn {
-            background: #475569;
-            color: white;
+            background: #e5e7eb;
+            color: #111827;
         }
 
         .rename-form .cancel-btn:hover {
-            background: #334155;
+            filter: brightness(0.97);
         }
 
-        /* Entities Panel */
+        /* Панель сущностей */
         .entities-panel {
             width: 320px;
-            background: #0f1514;
-            border-left: 1px solid #2d3d35;
+            background: var(--surface);
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .entities-header {
             padding: 20px;
-            border-bottom: 1px solid #2d3d35;
+            position: relative;
+        }
+
+        .entities-header::after {
+            content: '';
+            display: block;
+            height: 1px;
+            background: var(--line);
+            position: absolute;
+            left: 20px;
+            right: 20px;
+            bottom: 0;
         }
 
         .entities-header h2 {
-            margin-bottom: 10px;
-            color: #10b981;
-            font-size: 1.2rem;
+            margin-bottom: 6px;
+            color: var(--text);
+            font-size: 1.05rem;
+            font-weight: 800;
         }
 
         .entities-stats {
             font-size: 0.85rem;
-            color: #94a3b8;
-            margin-bottom: 10px;
+            color: var(--muted);
+            margin-bottom: 8px;
         }
 
         .entities-filter {
             display: flex;
-            gap: 5px;
+            gap: 6px;
             flex-wrap: wrap;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
         .filter-btn {
-            padding: 5px 10px;
-            background: #1a1f1e;
-            border: 1px solid #2d3d35;
-            color: #94a3b8;
-            border-radius: 15px;
+            padding: 6px 10px;
+            background: var(--bubble);
+            color: var(--muted);
+            border: none;
+            border-radius: 999px;
             cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.3s;
+            font-size: 0.85rem;
         }
 
         .filter-btn:hover {
-            background: #232b28;
-            border-color: #10b981;
-            color: #10b981;
+            filter: brightness(0.98);
+            color: var(--text);
         }
 
         .filter-btn.active {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            border-color: #10b981;
-            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+            background: var(--accent);
+            color: #fff;
         }
 
         .entities-list {
@@ -800,111 +801,86 @@
         }
 
         .entity-item {
-            background: #1a1f1e;
-            border: 1px solid #2d3d35;
-            border-radius: 8px;
+            background: var(--surface);
+            border-radius: 12px;
             padding: 12px;
             margin-bottom: 10px;
-            border-left: 3px solid #10b981;
+            outline: 2px solid var(--line);
+            /* мягкий контур вместо бордера, можно убрать вовсе */
         }
 
         .entity-type {
             font-size: 0.75rem;
-            color: #10b981;
-            font-weight: bold;
+            color: var(--muted);
+            font-weight: 800;
             text-transform: uppercase;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
 
         .entity-value {
             font-size: 0.95rem;
-            color: #e2e8f0;
-            margin-bottom: 5px;
-            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 4px;
+            font-weight: 600;
         }
 
         .entity-context {
-            font-size: 0.8rem;
-            color: #94a3b8;
+            font-size: 0.85rem;
+            color: #6b7280;
             font-style: italic;
         }
 
         .entity-date {
-            font-size: 0.7rem;
-            color: #64748b;
-            margin-top: 5px;
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-top: 4px;
         }
 
         .no-entities {
             text-align: center;
-            color: #64748b;
-            padding: 20px;
+            color: #94a3b8;
+            padding: 16px;
             font-size: 0.9rem;
         }
 
-        .entity-colors-name {
-            border-left-color: #06b6d4;
-        }
-
-        .entity-colors-personal_info {
-            border-left-color: #a855f7;
-        }
-
-        .entity-colors-preferences {
-            border-left-color: #f43f5e;
-        }
-
-        .entity-colors-usage {
-            border-left-color: #10b981;
-        }
-
-        .entity-colors-goals {
-            border-left-color: #f59e0b;
-        }
-
-        .entity-colors-experience {
-            border-left-color: #14b8a6;
-        }
-
-        .entity-colors-contact {
-            border-left-color: #f97316;
-        }
-
-        .entity-colors-other {
-            border-left-color: #64748b;
-        }
-
-        /* Tab Navigation */
+        /* Навигация по табам */
         .tab-navigation {
             display: flex;
-            gap: 10px;
-            padding: 20px;
-            border-bottom: 1px solid #2d3d35;
-            background: #0f1514;
+            gap: 8px;
+            padding: 16px;
+            background: var(--surface);
+            position: relative;
+        }
+
+        .tab-navigation::after {
+            content: '';
+            display: block;
+            height: 1px;
+            background: var(--line);
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            bottom: 0;
         }
 
         .tab-btn {
-            padding: 10px 20px;
-            background: #1a1f1e;
-            border: 1px solid #2d3d35;
-            color: #94a3b8;
-            border-radius: 8px;
+            padding: 10px 14px;
+            background: var(--bubble);
+            color: var(--muted);
+            border: none;
+            border-radius: 12px;
             cursor: pointer;
             font-size: 1rem;
-            transition: all 0.3s;
         }
 
         .tab-btn:hover {
-            background: #232b28;
-            border-color: #10b981;
-            color: #10b981;
+            filter: brightness(0.98);
+            color: var(--text);
         }
 
         .tab-btn.active {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            border-color: #10b981;
-            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+            background: var(--accent);
+            color: #fff;
         }
 
         .tab-content {
@@ -918,97 +894,96 @@
             flex-direction: column;
         }
 
-        /* Collections Management */
+        /* Коллекции */
         .collections-container {
-            padding: 20px;
+            padding: 16px;
             overflow-y: auto;
             flex: 1;
             height: 100%;
         }
 
         .collection-card {
-            background: #1a1f1e;
-            border: 1px solid #2d3d35;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-left: 3px solid #10b981;
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 12px;
+            outline: 2px solid var(--line);
         }
 
         .collection-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .collection-name {
-            font-size: 1.1rem;
-            color: #10b981;
-            font-weight: bold;
+            font-size: 1.05rem;
+            color: var(--text);
+            font-weight: 800;
         }
 
         .collection-actions {
             display: flex;
-            gap: 5px;
+            gap: 6px;
         }
 
         .collection-actions button {
-            padding: 5px 10px;
+            padding: 6px 10px;
             border: none;
-            border-radius: 4px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 0.9rem;
-            transition: all 0.3s;
+            background: var(--bubble);
+            color: var(--text);
         }
 
         .btn-clear {
-            background: #f59e0b;
-            color: white;
+            background: #fde68a;
+            color: #7c2d12;
         }
 
         .btn-clear:hover {
-            background: #d97706;
+            filter: brightness(0.98);
         }
 
         .btn-delete {
-            background: #ef4444;
-            color: white;
+            background: #fca5a5;
+            color: #7f1d1d;
         }
 
         .btn-delete:hover {
-            background: #dc2626;
+            filter: brightness(0.98);
         }
 
         .collection-stats {
             display: flex;
-            gap: 20px;
+            gap: 16px;
             font-size: 0.9rem;
-            color: #94a3b8;
+            color: var(--muted);
         }
 
         .stat-item {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
         }
 
         .create-collection-form {
-            background: #1a1f1e;
-            border: 1px solid #2d3d35;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .form-group label {
             display: block;
-            color: #94a3b8;
-            margin-bottom: 5px;
+            color: var(--muted);
+            margin-bottom: 6px;
             font-size: 0.9rem;
         }
 
@@ -1016,62 +991,46 @@
         .form-group select {
             width: 100%;
             padding: 10px;
-            border: 2px solid #2d3d35;
-            background: #0f1514;
-            color: #e2e8f0;
-            border-radius: 6px;
-            font-size: 1rem;
+            border: none;
+            border-radius: 12px;
+            background: var(--bubble);
+            color: var(--text);
         }
 
         .form-group input:focus,
         .form-group select:focus {
-            outline: none;
-            border-color: #10b981;
+            outline: 2px solid var(--accent);
         }
 
         .upload-area {
-            background: #1a1f1e;
-            border: 2px dashed #2d3d35;
-            border-radius: 8px;
-            padding: 30px;
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 24px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 20px;
+            transition: all 0.2s;
+            outline: 2px dashed var(--line);
         }
 
-        .upload-area:hover {
-            border-color: #10b981;
-            background: #232b28;
-        }
-
+        .upload-area:hover,
         .upload-area.dragging {
-            border-color: #10b981;
-            background: #232b28;
+            background: #f8fafd;
         }
 
         .chunker-description {
             margin-top: 10px;
             padding: 12px;
-            background: #0f1514;
-            border-left: 3px solid #10b981;
-            border-radius: 4px;
-            color: #94a3b8;
+            background: #f8fafd;
+            border-radius: 10px;
+            color: #6b7280;
             font-size: 0.9rem;
             line-height: 1.5;
         }
 
         .chunker-description strong {
-            color: #10b981;
+            color: var(--text);
         }
 
-        /* Input placeholders */
-        input::placeholder {
-            color: #64748b;
-            opacity: 1;
-        }
-
-        /* Scrollbar styles */
         .sessions-list::-webkit-scrollbar,
         .entities-list::-webkit-scrollbar,
         .messages-container::-webkit-scrollbar {
@@ -1081,159 +1040,345 @@
         .sessions-list::-webkit-scrollbar-track,
         .entities-list::-webkit-scrollbar-track,
         .messages-container::-webkit-scrollbar-track {
-            background: #1a1f1e;
+            background: var(--surface);
         }
 
         .sessions-list::-webkit-scrollbar-thumb,
         .entities-list::-webkit-scrollbar-thumb,
         .messages-container::-webkit-scrollbar-thumb {
-            background: #2d3d35;
+            background: #e2e8f0;
             border-radius: 4px;
         }
 
         .sessions-list::-webkit-scrollbar-thumb:hover,
         .entities-list::-webkit-scrollbar-thumb:hover,
         .messages-container::-webkit-scrollbar-thumb:hover {
-            background: #10b981;
+            background: #cbd5e1;
+        }
+
+        .input-number {
+            width: 100%;
+            height: 36px;
+            margin-top: 10px;
+            margin-bottom: 3px;
+            background: #ffffff;
+            color: #0b1426;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 0 14px;
+            font-size: 1rem;
+            outline: none;
+
+            appearance: auto;
+            -webkit-appearance: auto;
+            -moz-appearance: auto;
+        }
+
+        .input-number:focus {
+            border-color: #3167f0;
+            outline: 2px solid #3167f0;
+            outline-offset: 0;
+        }
+
+        .input-number::-webkit-inner-spin-button,
+        .input-number::-webkit-outer-spin-button {
+            -webkit-appearance: inner-spin-button;
+            margin: 0;
+        }
+
+        :root {
+            --sb-thumb: #e1e6ef;
+            --sb-thumb-hover: #cbd5e1;
+        }
+
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--sb-thumb) transparent;
+        }
+
+        *::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        *::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        *::-webkit-scrollbar-thumb {
+            background: var(--sb-thumb);
+            border-radius: 999px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+
+        *::-webkit-scrollbar-thumb:hover {
+            background: var(--sb-thumb-hover);
+        }
+
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .icon-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: black;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* .icon-btn:hover {
+        background: #e1e6ef;
+      } */
+        .icon-btn.rename:hover svg {
+            stroke: rgb(33, 81, 212);
+        }
+
+        .edit-classification-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            margin-left: 8px;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .edit-classification-btn:hover {
+            opacity: 1;
+        }
+
+        .edit-classification-btn svg {
+            width: 16px;
+            height: 16px;
+            stroke: #64748b;
+        }
+
+        .classification-editor-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .classification-editor-content {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .classification-editor-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #0b1426;
+        }
+
+        .classification-editor-message {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+
+        .classification-editor-form-group {
+            margin-bottom: 20px;
+        }
+
+        .classification-editor-form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #0b1426;
+        }
+
+        .classification-editor-select,
+        .classification-editor-textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+        }
+
+        .classification-editor-select:focus,
+        .classification-editor-textarea:focus {
+            outline: none;
+            border-color: #3167f0;
+            box-shadow: 0 0 0 3px rgba(49, 103, 240, 0.1);
+        }
+
+        .classification-editor-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .classification-editor-current {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .classification-editor-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .classification-editor-buttons button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .classification-editor-cancel {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .classification-editor-cancel:hover {
+            background: #e2e8f0;
+        }
+
+        .classification-editor-submit {
+            background: #3167f0;
+            color: white;
+        }
+
+        .classification-editor-submit:hover {
+            background: #2451c7;
+        }
+
+        .classification-editor-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .icon-btn.delete:hover svg {
+            stroke: #dc2626;
+        }
+
+        .icon-btn:focus-visible {
+            outline: 2px solid white;
+            outline-offset: 2px;
+        }
+
+        .icon-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <!-- Main Chat Interface -->
-        <div id="mainInterface" class="main-interface">
-            <!-- Sidebar -->
-            <div class="sidebar">
+        <div id="mainInterface" class="layout">
+            <!-- Сайдбар как отдельная карточка -->
+            <div class="sidebar card">
                 <div class="sidebar-header">
-                    <h2>💬 Chat Sessions</h2>
-                    <div style="display: flex; gap: 5px; margin: 10px 0; align-items: center;">
-                        <label style="color: #94a3b8; font-size: 0.9rem;">User ID:</label>
-                        <input type="number" id="userIdInput" value="1" min="1"
-                            style="flex: 1; padding: 5px; border: 1px solid #2d3d35; background: #0f1514; color: #e2e8f0; border-radius: 4px;"
-                            onchange="changeUserId(this.value)">
+                    <h2>Сессии чата</h2>
+                    <div class="sidebar-user">
+                        <label class="user-email">ID пользователя:</label>
+                        <input class="input-number" type="number" id="userIdInput" value="1" min="1"
+                            placeholder="ID пользователя" onchange="changeUserId(this.value)" />
+                        <button class="new-session-btn" onclick="createNewSession()">
+                            Новая сессия
+                        </button>
                     </div>
-                    <button class="new-session-btn" onclick="createNewSession()">➕ New Session</button>
                 </div>
                 <div class="sessions-list" id="sessionsList"></div>
             </div>
 
-            <!-- Main Content Area -->
-            <div class="chat-area">
-                <!-- Tab Navigation -->
+            <!-- Область чата как отдельная карточка -->
+            <div class="chat-area card">
                 <div class="tab-navigation">
-                    <button class="tab-btn active" onclick="switchTab('chat')">💬 Chat</button>
-                    <button class="tab-btn" onclick="switchTab('collections')">📚 Collections</button>
+                    <button class="tab-btn active" onclick="switchTab('chat')">
+                        Чат
+                    </button>
                 </div>
 
-                <!-- Chat Tab -->
                 <div id="chatTab" class="tab-content active">
                     <div id="emptyState" class="empty-state">
-                        <h3>👈 Select or create a session to start chatting</h3>
+                        <h3>Выберите или создайте сессию, чтобы начать общение</h3>
                     </div>
 
                     <div id="chatInterface" class="hidden chat-interface">
                         <div class="chat-header">
-                            <h2 id="sessionName">Chat</h2>
-                            <button class="clear-btn" onclick="clearChat()">🗑️ Clear Chat</button>
+                            <h2 id="sessionName">Чат</h2>
+                            <button class="clear-btn" onclick="clearChat()">
+                                Очистить чат
+                            </button>
                         </div>
                         <div class="messages-container" id="messagesContainer"></div>
                         <div class="input-area">
-                            <input type="text" id="messageInput" placeholder="Type your message here..."
-                                onkeypress="if(event.key === 'Enter') sendMessage()">
-                            <button id="sendBtn" onclick="sendMessage()">Send</button>
+                            <input type="text" id="messageInput" placeholder="Введите сообщение…"
+                                onkeypress="if(event.key === 'Enter') sendMessage()" />
+                            <button id="sendBtn" onclick="sendMessage()">Отправить</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Collections Tab -->
-                <div id="collectionsTab" class="tab-content">
-                    <div class="collections-container">
-                        <h2 style="color: #10b981; margin-bottom: 20px;">📚 Collections Management</h2>
-
-                        <!-- Create Collection Form -->
-                        <div class="create-collection-form">
-                            <h3 style="color: #e2e8f0; margin-bottom: 15px;">Create New Collection</h3>
-                            <div class="form-group">
-                                <label>Collection Name</label>
-                                <input type="text" id="collectionName" placeholder="my_documents">
-                            </div>
-                            <div class="form-group">
-                                <label>Embedding Size</label>
-                                <select id="embeddingSize">
-                                    <option value="4096" selected>4096 (Qwen/Qwen3-Embedding-8B)</option>
-                                    <option value="1536">1536 (OpenAI text-embedding-3-small)</option>
-                                    <option value="3072">3072 (OpenAI text-embedding-3-large)</option>
-                                    <option value="768">768 (sentence-transformers)</option>
-                                    <option value="384">384 (minilm)</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Distance Metric</label>
-                                <select id="distanceMetric">
-                                    <option value="Cosine">Cosine</option>
-                                    <option value="Euclid">Euclidean</option>
-                                    <option value="Dot">Dot Product</option>
-                                </select>
-                            </div>
-                            <button class="new-session-btn" onclick="createCollection()">➕ Create Collection</button>
-                        </div>
-
-                        <!-- Upload Documents -->
-                        <div class="create-collection-form">
-                            <h3 style="color: #e2e8f0; margin-bottom: 15px;">Upload Documents</h3>
-                            <div class="form-group">
-                                <label>Target Collection</label>
-                                <select id="uploadCollection">
-                                    <option value="">Default Collection</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Chunking Strategy</label>
-                                <select id="chunkerType">
-                                    <option value="token">Token-Based (Default)</option>
-                                    <option value="sentence">Sentence-Based</option>
-                                    <option value="recursive">Recursive (Hierarchical)</option>
-                                    <option value="semantic">Semantic (AI-Powered)</option>
-                                    <option value="slumber">Slumber (LLM-Powered)</option>
-                                </select>
-                                <div id="chunkerDescription" class="chunker-description"></div>
-                            </div>
-                            <div class="upload-area" id="uploadArea"
-                                onclick="document.getElementById('fileInput').click()">
-                                <div style="font-size: 3rem; margin-bottom: 10px;">📤</div>
-                                <div style="color: #e2e8f0; font-size: 1.1rem; margin-bottom: 5px;">Upload MD or CSV
-                                    Files</div>
-                                <div style="color: #94a3b8; font-size: 0.9rem;">Click to browse or drag and drop files
-                                    here</div>
-                                <input type="file" id="fileInput" multiple accept=".md,.csv" style="display: none;"
-                                    onchange="handleFileSelect(event)">
-                            </div>
-                            <div id="uploadProgress" style="display: none; color: #10b981; margin-top: 10px;"></div>
-                        </div>
-
-                        <!-- Collections List -->
-                        <h3 style="color: #e2e8f0; margin-bottom: 15px;">Your Collections</h3>
-                        <div id="collectionsList"></div>
-                    </div>
-                </div>
             </div>
 
-            <!-- Entities Panel -->
-            <div class="entities-panel">
+            <!-- Панель сущностей как отдельная карточка -->
+            <div class="entities-panel card">
                 <div class="entities-header">
-                    <h2>📊 Extracted Info</h2>
-                    <div class="entities-stats" id="entitiesStats">0 entities extracted</div>
+                    <h2>Извлечённые данные</h2>
+                    <div class="entities-stats" id="entitiesStats">0 сущностей</div>
                     <div class="entities-filter">
-                        <button class="filter-btn active" onclick="filterEntities('all')">All</button>
-                        <button class="filter-btn" onclick="filterEntities('name')">Name</button>
-                        <button class="filter-btn" onclick="filterEntities('usage')">Usage</button>
-                        <button class="filter-btn" onclick="filterEntities('preferences')">Prefs</button>
-                        <button class="filter-btn" onclick="filterEntities('personal_info')">Info</button>
+                        <button class="filter-btn active" onclick="filterEntities('all')">
+                            Все
+                        </button>
+                        <button class="filter-btn" onclick="filterEntities('name')">
+                            Имя
+                        </button>
+                        <button class="filter-btn" onclick="filterEntities('usage')">
+                            Использование
+                        </button>
+                        <button class="filter-btn" onclick="filterEntities('preferences')">
+                            Предпочтения
+                        </button>
+                        <button class="filter-btn" onclick="filterEntities('personal_info')">
+                            Персональные данные
+                        </button>
                     </div>
                 </div>
                 <div class="entities-list" id="entitiesList">
-                    <div class="no-entities">No information extracted yet. Start chatting to see extracted entities!
+                    <div class="no-entities">
+                        Пока ничего не извлечено. Начните переписку, чтобы увидеть
+                        найденные сущности.
                     </div>
                 </div>
             </div>
@@ -1242,1194 +1387,1403 @@
 
     <script>
         // Используем текущий хост для API запросов (работает с любым IP/доменом)
-        const API_BASE = `${window.location.protocol}//${window.location.host}/api/v1`;
+        const API_BASE = `${window.location.protocol}//${window.location.host}/api/v1`
 
         // Get user ID from URL parameter or default to 1
         function getUserIdFromUrl() {
-            const urlParams = new URLSearchParams(window.location.search);
-            return parseInt(urlParams.get('user_id')) || 1;
+            const urlParams = new URLSearchParams(window.location.search)
+            return parseInt(urlParams.get('user_id')) || 1
         }
 
         // Global state management
+        // ======= STATE =======
         class AppState {
             constructor() {
-                this.userId = getUserIdFromUrl();
-                this.activeSession = null;
-                this.sessions = [];
-                this.messages = [];
-                this.entities = [];
-                this.filteredEntities = [];
-                this.entityFilter = 'all';
-                this.isLoading = false;
+                this.userId = getUserIdFromUrl()
+                this.activeSession = null
+                this.sessions = []
+                this.messages = []
+                this.entities = []
+                this.filteredEntities = []
+                this.entityFilter = 'all'
+                this.isLoading = false
             }
 
             setActiveSession(sessionId) {
-                console.log('Setting active session:', sessionId);
-
-                // Clear previous session data
-                this.messages = [];
-                this.entities = [];
-                this.filteredEntities = [];
-
-                // Set new active session
-                this.activeSession = sessionId;
+                console.log('Setting active session:', sessionId)
+                // очистка прошлых данных
+                this.messages = []
+                this.entities = []
+                this.filteredEntities = []
+                this.activeSession = sessionId
             }
 
             clearSession() {
-                console.log('Clearing all session data');
-                this.activeSession = null;
-                this.messages = [];
-                this.entities = [];
-                this.filteredEntities = [];
+                console.log('Clearing all session data')
+                this.activeSession = null
+                this.messages = []
+                this.entities = []
+                this.filteredEntities = []
             }
         }
 
-        const state = new AppState();
+        const state = new AppState()
 
-        // Utility Functions
+        // ======= UTILS =======
         function showToast(message, type = 'info') {
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.textContent = message;
-            document.body.appendChild(toast);
+            const toast = document.createElement('div')
+            toast.className = `toast ${type}`
+            toast.textContent = message
+            document.body.appendChild(toast)
 
             setTimeout(() => {
-                toast.style.animation = 'slideOut 0.3s ease-out';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
+                toast.style.animation = 'slideOut 0.3s ease-out'
+                setTimeout(() => toast.remove(), 300)
+            }, 3000)
         }
 
-        // Change user ID and reload sessions
+        function escapeHtml(text) {
+            const div = document.createElement('div')
+            div.textContent = text
+            return div.innerHTML.replace(/\n/g, '<br>')
+        }
+
+        function getUserIdFromUrl() {
+            const url = new URL(window.location)
+            const u = url.searchParams.get('user_id')
+            const n = Number(u)
+            return Number.isFinite(n) && n > 0 ? n : 1
+        }
+
+        // ======= USER ID CHANGE =======
         async function changeUserId(newUserId) {
-            const userId = parseInt(newUserId);
+            const userId = parseInt(newUserId)
             if (userId < 1 || isNaN(userId)) {
-                showToast('Invalid user ID', 'error');
-                document.getElementById('userIdInput').value = state.userId;
-                return;
+                showToast('Некорректный ID пользователя', 'error')
+                document.getElementById('userIdInput').value = state.userId
+                return
             }
+            if (userId === state.userId) return
 
-            // Don't reload if same user
-            if (userId === state.userId) return;
+            console.log('Changing user from', state.userId, 'to', userId)
 
-            console.log('Changing user from', state.userId, 'to', userId);
+            const oldUserId = state.userId
+            state.userId = userId
+            state.clearSession()
 
-            // Update state BEFORE clearing
-            const oldUserId = state.userId;
-            state.userId = userId;
+            // сразу очищаем UI
+            const messagesContainer = document.getElementById('messagesContainer')
+            messagesContainer.innerHTML = ''
+            document.getElementById('entitiesList').innerHTML =
+                '<div class="no-entities">Информация ещё не извлечена.</div>'
+            document.getElementById('sessionsList').innerHTML =
+                '<div class="loading"><div class="loading-spinner"></div><p>Загружаем сессии…</p></div>'
 
-            // Clear all session data
-            state.clearSession();
+            // URL
+            const url = new URL(window.location)
+            url.searchParams.set('user_id', userId)
+            window.history.pushState({}, '', url)
 
-            // Clear UI immediately
-            const messagesContainer = document.getElementById('messagesContainer');
-            messagesContainer.innerHTML = '';
-            document.getElementById('entitiesList').innerHTML = '<div class="no-entities">No information extracted yet.</div>';
-            document.getElementById('sessionsList').innerHTML = '<div class="loading"><div class="loading-spinner"></div><p>Loading sessions...</p></div>';
+            // прячем чат
+            document.getElementById('chatInterface').classList.add('hidden')
+            document.getElementById('emptyState').classList.remove('hidden')
 
-            // Update URL to persist user_id
-            const url = new URL(window.location);
-            url.searchParams.set('user_id', userId);
-            window.history.pushState({}, '', url);
+            await loadSessions()
 
-            // Hide chat interface
-            document.getElementById('chatInterface').classList.add('hidden');
-            document.getElementById('emptyState').classList.remove('hidden');
-
-            // Reload sessions for new user
-            await loadSessions();
-
-            // Auto-select first session if available
             if (state.sessions.length > 0) {
-                await selectSession(state.sessions[0]);
+                await selectSession(state.sessions[0])
             } else {
-                // No sessions for this user
-                renderEntities();
+                renderEntities()
             }
 
-            showToast(`Switched to User ID: ${userId}`, 'success');
-            console.log('User changed successfully');
+            showToast(`Переключились на пользователя ID: ${userId}`, 'success')
+            console.log('User changed successfully')
         }
 
-        // Session Management
+        // ======= SESSIONS =======
         async function loadSessions() {
             try {
-                const response = await fetch(`${API_BASE}/auth/sessions?user_id=${state.userId}`);
-
-                if (!response.ok) throw new Error('Failed to load sessions');
-
-                const sessions = await response.json();
-                state.sessions = sessions;
-                renderSessions();
+                const response = await fetch(
+                    `${API_BASE}/auth/sessions?user_id=${state.userId}`
+                )
+                if (!response.ok) throw new Error('Failed to load sessions')
+                const sessions = await response.json()
+                state.sessions = sessions
+                renderSessions()
             } catch (error) {
-                console.error('Failed to load sessions:', error);
-                state.sessions = [];
-                renderSessions();
+                console.error('Failed to load sessions:', error)
+                state.sessions = []
+                renderSessions()
             }
         }
 
         function renderSessions() {
-            const container = document.getElementById('sessionsList');
-
-            // Always clear container first
-            container.innerHTML = '';
+            const container = document.getElementById('sessionsList')
+            container.innerHTML = ''
 
             if (state.sessions.length === 0) {
-                container.innerHTML = '<div style="color: #64748b; padding: 20px; text-align: center;">No sessions yet</div>';
-                return;
+                container.innerHTML =
+                    '<div style="color:#64748b;padding:20px;text-align:center;">Сеансов пока нет</div>'
+                return
             }
 
-            console.log('Rendering', state.sessions.length, 'sessions. Active:', state.activeSession);
+            console.log(
+                'Rendering',
+                state.sessions.length,
+                'sessions. Active:',
+                state.activeSession
+            )
 
-            state.sessions.forEach(session => {
-                const isActive = session.session_id === state.activeSession;
-                const sessionDiv = document.createElement('div');
-                sessionDiv.className = 'session-item' + (isActive ? ' active' : '');
-                sessionDiv.dataset.sessionId = session.session_id; // For debugging
+            state.sessions.forEach((session) => {
+                const isActive = session.session_id === state.activeSession
+                const sessionDiv = document.createElement('div')
+                sessionDiv.className = 'session-item' + (isActive ? ' active' : '')
+                sessionDiv.dataset.sessionId = session.session_id
 
-                const name = session.name || `Session ${session.session_id.substring(0, 8)}`;
+                const name =
+                    session.name || `Сессия ${session.session_id.substring(0, 8)}`
 
-                const nameSpan = document.createElement('span');
-                nameSpan.textContent = name;
-                nameSpan.style.cursor = 'pointer';
-                nameSpan.style.flex = '1';
-                nameSpan.addEventListener('click', () => selectSession(session));
+                const nameSpan = document.createElement('span')
+                nameSpan.textContent = name
+                nameSpan.style.cursor = 'pointer'
+                nameSpan.style.flex = '1'
+                nameSpan.addEventListener('click', () => selectSession(session))
 
-                const actionsDiv = document.createElement('div');
-                actionsDiv.className = 'session-actions';
+                const actionsDiv = document.createElement('div')
+                actionsDiv.className = 'session-actions'
 
-                const renameBtn = document.createElement('button');
-                renameBtn.textContent = '✏️';
+                const renameBtn = document.createElement('button')
+                renameBtn.className = 'icon-btn rename'
+                renameBtn.type = 'button'
+                renameBtn.title = 'Переименовать'
+                renameBtn.setAttribute('aria-label', 'Переименовать')
+                renameBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 20h9" />
+        <path d="M16.5 3.5l4 4L8 20l-5 1 1-5L16.5 3.5z" />
+      </svg>
+    `
                 renameBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    startRename(session.session_id, name);
-                };
+                    e.stopPropagation()
+                    startRename(session.session_id, name)
+                }
 
-                const deleteBtn = document.createElement('button');
-                deleteBtn.textContent = '🗑️';
+                const deleteBtn = document.createElement('button')
+                deleteBtn.className = 'icon-btn delete'
+                deleteBtn.type = 'button'
+                deleteBtn.title = 'Удалить'
+                deleteBtn.setAttribute('aria-label', 'Удалить')
+                deleteBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 6h18" />
+        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+        <path d="M10 11v6" />
+        <path d="M14 11v6" />
+      </svg>
+    `
                 deleteBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    deleteSession(session.session_id);
-                };
+                    e.stopPropagation()
+                    deleteSession(session.session_id)
+                }
 
-                actionsDiv.appendChild(renameBtn);
-                actionsDiv.appendChild(deleteBtn);
+                actionsDiv.appendChild(renameBtn)
+                actionsDiv.appendChild(deleteBtn)
 
-                sessionDiv.appendChild(nameSpan);
-                sessionDiv.appendChild(actionsDiv);
+                sessionDiv.appendChild(nameSpan)
+                sessionDiv.appendChild(actionsDiv)
 
-                container.appendChild(sessionDiv);
-            });
+                container.appendChild(sessionDiv)
+            })
         }
 
         async function createNewSession() {
-            if (state.isLoading) return;
-            state.isLoading = true;
+            if (state.isLoading) return
+            state.isLoading = true
 
             try {
-                const url = `${API_BASE}/auth/session?user_id=${state.userId}&name=New%20Session`;
-                console.log('Creating session:', url);
-
-                const response = await fetch(url, {
-                    method: 'POST'
-                });
-
-                console.log('Response status:', response.status);
-
+                const url = `${API_BASE}/auth/session?user_id=${state.userId}&name=New%20Session`
+                const response = await fetch(url, { method: 'POST' })
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Error response:', errorText);
-                    throw new Error('Failed to create session');
+                    const errorText = await response.text()
+                    console.error('Error response:', errorText)
+                    throw new Error('Failed to create session')
                 }
 
-                const data = await response.json();
-                console.log('Session created:', data);
+                const data = await response.json()
 
-                // Switch to chat tab first
-                switchTab('chat');
-
-                // Set active session
-                state.setActiveSession(data.session_id);
-
-                // Reload sessions list
-                await loadSessions();
-
-                // Show chat interface
-                showChatInterface();
-
-                // Focus on input
-                document.getElementById('messageInput').focus();
-
-                showToast('New session created!', 'success');
+                switchTab('chat')
+                state.setActiveSession(data.session_id)
+                try { localStorage.setItem(`last_session_${state.userId}`, data.session_id) } catch (e) { }
+                await loadSessions()
+                // Clear UI and ensure fresh state for the new session
+                renderMessages()
+                renderEntities()
+                await loadMessages()
+                showChatInterface()
+                document.getElementById('messageInput').focus()
+                showToast('Сессия создана', 'success')
             } catch (error) {
-                console.error('Create session error:', error);
-                showToast('Failed to create session: ' + error.message, 'error');
+                console.error('Create session error:', error)
+                showToast('Не удалось создать сессию: ' + error.message, 'error')
             } finally {
-                state.isLoading = false;
+                state.isLoading = false
             }
         }
 
         async function selectSession(session) {
-            if (state.isLoading) return;
+            if (state.isLoading) return
             if (state.activeSession === session.session_id) {
-                console.log('Session already active, skipping reload');
-                return; // Already active
+                console.log('Session already active, skipping reload')
+                return
             }
 
-            state.isLoading = true;
-
+            state.isLoading = true
             try {
-                console.log('Selecting session:', session.session_id);
+                console.log('Selecting session:', session.session_id)
+                switchTab('chat')
+                const oldSessionId = state.activeSession
+                state.setActiveSession(session.session_id)
+                try { localStorage.setItem(`last_session_${state.userId}`, session.session_id) } catch (e) { }
 
-                // Switch to chat tab first
-                switchTab('chat');
+                state.messages = []
+                state.entities = []
+                state.filteredEntities = []
 
-                // IMPORTANT: Set active session BEFORE clearing to ensure proper state
-                const oldSessionId = state.activeSession;
-                state.setActiveSession(session.session_id);
+                const messagesContainer = document.getElementById('messagesContainer')
+                messagesContainer.innerHTML =
+                    '<div class="loading"><div class="loading-spinner"></div><p>Загружаем сообщения…</p></div>'
+                renderEntities()
+                renderSessions()
+                showChatInterface()
 
-                // Clear previous messages and entities immediately
-                state.messages = [];
-                state.entities = [];
-                state.filteredEntities = [];
+                await Promise.all([loadMessages(), loadEntities()])
 
-                // Force re-render with empty state
-                const messagesContainer = document.getElementById('messagesContainer');
-                messagesContainer.innerHTML = '<div class="loading"><div class="loading-spinner"></div><p>Loading messages...</p></div>';
-                renderEntities();
-
-                // Update sessions list UI to show new active session
-                renderSessions();
-
-                // Show chat interface
-                showChatInterface();
-
-                // Load data for this session
-                await Promise.all([
-                    loadMessages(),
-                    loadEntities()
-                ]);
-
-                // Focus on input
-                document.getElementById('messageInput').focus();
-
-                console.log('Session selected successfully');
+                document.getElementById('messageInput').focus()
+                console.log('Session selected successfully')
             } catch (error) {
-                console.error('Failed to switch session:', error);
-                showToast('Failed to switch session: ' + error.message, 'error');
+                console.error('Failed to switch session:', error)
+                showToast('Не удалось переключить сессию: ' + error.message, 'error')
             } finally {
-                state.isLoading = false;
+                state.isLoading = false
             }
         }
 
         async function deleteSession(sessionId) {
-            if (state.isLoading) return;
-
+            if (state.isLoading) return
             if (sessionId === state.activeSession) {
-                showToast('Cannot delete active session. Switch to another session first.', 'error');
-                return;
+                showToast(
+                    'Нельзя удалить активную сессию. Сначала переключитесь.',
+                    'error'
+                )
+                return
             }
+            if (!confirm('Удалить эту сессию?')) return
 
-            if (!confirm('Are you sure you want to delete this session?')) return;
-
-            state.isLoading = true;
-
+            state.isLoading = true
             try {
                 await fetch(`${API_BASE}/auth/session/${sessionId}`, {
-                    method: 'DELETE'
-                });
+                    method: 'DELETE',
+                })
+                await loadSessions()
 
-                await loadSessions();
-
-                // If we have no sessions left, hide chat interface
                 if (state.sessions.length === 0) {
-                    state.clearSession();
-                    document.getElementById('chatInterface').classList.add('hidden');
-                    document.getElementById('emptyState').classList.remove('hidden');
+                    state.clearSession()
+                    document.getElementById('chatInterface').classList.add('hidden')
+                    document.getElementById('emptyState').classList.remove('hidden')
                 }
 
-                showToast('Session deleted', 'info');
+                showToast('Сессия удалена', 'info')
             } catch (error) {
-                showToast('Failed to delete session: ' + error.message, 'error');
+                showToast('Не удалось удалить сессию: ' + error.message, 'error')
             } finally {
-                state.isLoading = false;
+                state.isLoading = false
             }
         }
 
         function startRename(sessionId, currentName) {
-            const newName = prompt('Enter new session name:', currentName);
+            const newName = prompt('Введите новое имя сессии:', currentName)
             if (newName && newName !== currentName) {
-                renameSession(sessionId, newName);
+                renameSession(sessionId, newName)
             }
         }
 
         async function renameSession(sessionId, newName) {
             try {
-                // Note: API endpoint doesn't exist yet, simplified for now
-                showToast('Rename not implemented yet', 'info');
-                // await fetch(`${API_BASE}/auth/session/${sessionId}?name=${encodeURIComponent(newName)}`, {
-                //     method: 'PATCH'
-                // });
-                // await loadSessions();
+                // заглушка — бэк ещё не готов
+                showToast('Переименование пока не реализовано', 'info')
+                // await fetch(`${API_BASE}/auth/session/${sessionId}?name=${encodeURIComponent(newName)}`, { method: 'PATCH' })
+                // await loadSessions()
             } catch (error) {
-                showToast('Failed to rename session: ' + error.message, 'error');
+                showToast('Не удалось переименовать: ' + error.message, 'error')
             }
         }
 
         function showChatInterface() {
-            document.getElementById('emptyState').classList.add('hidden');
-            document.getElementById('chatInterface').classList.remove('hidden');
+            document.getElementById('emptyState').classList.add('hidden')
+            document.getElementById('chatInterface').classList.remove('hidden')
 
-            // Update session name in header
             if (state.activeSession) {
-                const session = state.sessions.find(s => s.session_id === state.activeSession);
-                const name = session?.name || `Session ${state.activeSession.substring(0, 8)}`;
-                document.getElementById('sessionName').textContent = name;
+                const session = state.sessions.find(
+                    (s) => s.session_id === state.activeSession
+                )
+                const name =
+                    session?.name || `Сессия ${state.activeSession.substring(0, 8)}`
+                document.getElementById('sessionName').textContent = name
             }
         }
 
-        // Message Functions
+        // ======= MESSAGES =======
         async function loadMessages() {
             if (!state.activeSession) {
-                console.log('No active session, clearing messages');
-                state.messages = [];
-                renderMessages();
-                return;
+                console.log('No active session, clearing messages')
+                state.messages = []
+                renderMessages()
+                return
             }
 
-            const sessionId = state.activeSession; // Capture current session for consistency check
-            console.log('Loading messages for session:', sessionId);
+            const sessionId = state.activeSession
+            console.log('Loading messages for session:', sessionId)
 
             try {
-                const response = await fetch(`${API_BASE}/chatbot/messages?session_id=${sessionId}`);
+                const response = await fetch(
+                    `${API_BASE}/chatbot/messages?session_id=${sessionId}`
+                )
 
-                // CRITICAL: Check if session changed while loading
                 if (state.activeSession !== sessionId) {
-                    console.log('Session changed during load, discarding old messages');
-                    return;
+                    console.log('Session changed during load, discarding old messages')
+                    return
                 }
 
                 if (!response.ok) {
                     if (response.status === 404) {
-                        // New session, no messages yet
-                        console.log('New session, no messages found');
+                        console.log('New session, no messages found')
                         if (state.activeSession === sessionId) {
-                            state.messages = [];
-                            renderMessages();
+                            state.messages = []
+                            renderMessages()
                         }
-                        return;
+                        return
                     }
-                    throw new Error('Failed to load messages');
+                    throw new Error('Failed to load messages')
                 }
 
-                const data = await response.json();
-                console.log('Loaded messages:', data.messages?.length || 0);
+                const data = await response.json()
+                console.log('Loaded messages:', data.messages?.length || 0)
 
-                // Triple-check session didn't change before updating state
                 if (state.activeSession === sessionId) {
-                    state.messages = data.messages || [];
-                    renderMessages();
-                    console.log('Messages rendered for session:', sessionId);
+                    state.messages = data.messages || []
+                    renderMessages()
+                    console.log('Messages rendered for session:', sessionId)
                 } else {
-                    console.log('Session changed after load, not rendering');
+                    console.log('Session changed after load, not rendering')
                 }
             } catch (error) {
-                console.error('Failed to load messages:', error);
-                // Only update if we're still on the same session
+                console.error('Failed to load messages:', error)
                 if (state.activeSession === sessionId) {
-                    state.messages = [];
-                    renderMessages();
+                    state.messages = []
+                    renderMessages()
                 }
             }
         }
 
         function renderMessages() {
-            const container = document.getElementById('messagesContainer');
-
-            // Always clear container first
-            container.innerHTML = '';
+            const container = document.getElementById('messagesContainer')
+            container.innerHTML = ''
 
             if (!state.activeSession) {
-                container.innerHTML = '<div class="empty-state"><h3>No session selected</h3><p>Select or create a session to start chatting</p></div>';
-                return;
+                container.innerHTML =
+                    '<div class="empty-state"><h3>Сессия не выбрана</h3><p>Выберите или создайте сессию, чтобы начать чат</p></div>'
+                return
             }
 
             if (state.messages.length === 0) {
-                container.innerHTML = '<div class="empty-state"><h3>No messages yet</h3><p>Start a conversation!</p></div>';
-                return;
+                container.innerHTML =
+                    '<div class="empty-state"><h3>Сообщений пока нет</h3><p>Начните диалог</p></div>'
+                return
             }
 
-            state.messages.forEach(msg => {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${msg.role}`;
+            state.messages.forEach((msg) => {
+                const messageDiv = document.createElement('div')
+                messageDiv.className = `message ${msg.role}`
 
-                let contentHtml = `<div class="message-content">${escapeHtml(msg.content)}`;
+                let contentHtml = `<div class="message-content">${escapeHtml(
+                    msg.content
+                )}`
 
-                // Add classification badges for user messages
                 if (msg.role === 'user') {
-                    const isClassifying = msg.classification === null || msg.intentClassification === null;
+                    const isClassifying =
+                        msg.classification === null || msg.intentClassification === null
 
                     if (isClassifying) {
-                        // Show loading state
                         contentHtml += `
-                            <div class="classification-loading">
-                                🔄 Classifying...
-                            </div>
-                        `;
+          <div class="classification-loading">Классификация…</div>
+        `
                     } else {
-                        contentHtml += '<div class="classifications-container">';
+                        contentHtml += '<div class="classifications-container">'
 
-                        // Show department classification
                         if (msg.classification) {
-                            const categoryLabel = msg.classification.category.replace(/_/g, ' ');
+                            const categoryLabel = msg.classification.category.replace(
+                                /_/g,
+                                ' '
+                            )
                             contentHtml += `
-                                <div class="classification-badge ${msg.classification.category}">
-                                    🏷️ ${categoryLabel}
-                                    <span class="priority-badge ${msg.classification.priority}">${msg.classification.priority}</span>
-                                </div>
-                            `;
+            <div class="classification-badge ${msg.classification.category}">
+              ${categoryLabel}
+              <span class="priority-badge ${msg.classification.priority}">
+                ${msg.classification.priority}
+              </span>
+            </div>
+          `
                         }
 
-                        // Show intent classification
                         if (msg.intentClassification) {
                             const intentLabels = {
-                                'access_request': 'Получение доступа',
-                                'information_request': 'Получение справки',
-                                'problem_solving': 'Решение проблемы',
-                                'other': 'Другое'
-                            };
-                            const intentLabel = intentLabels[msg.intentClassification.intent] || msg.intentClassification.intent;
+                                access_request: 'Получение доступа',
+                                information_request: 'Получение справки',
+                                problem_solving: 'Решение проблемы',
+                                other: 'Другое',
+                            }
+                            const intentLabel =
+                                intentLabels[msg.intentClassification.intent] ||
+                                msg.intentClassification.intent
                             contentHtml += `
-                                <div class="intent-badge ${msg.intentClassification.intent}">
-                                    🎯 ${intentLabel}
-                                </div>
-                            `;
+            <div class="intent-badge ${msg.intentClassification.intent}">
+              ${intentLabel}
+            </div>
+          `
                         }
 
-                        contentHtml += '</div>';
+                        // Add edit button for classification
+                        contentHtml += `
+            <button class="edit-classification-btn" onclick="openClassificationEditor(${state.messages.indexOf(msg)})" title="Исправить классификацию">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+          `
 
-                        // Show reasoning if available
+                        contentHtml += '</div>'
+
                         if (msg.classification && msg.classification.reasoning) {
                             contentHtml += `
-                                <div class="classification-reasoning">
-                                    💡 Отдел: ${escapeHtml(msg.classification.reasoning)}
-                                </div>
-                            `;
+            <div class="classification-reasoning">
+              Отдел: ${escapeHtml(msg.classification.reasoning)}
+            </div>
+          `
                         }
-                        if (msg.intentClassification && msg.intentClassification.reasoning) {
+                        if (
+                            msg.intentClassification &&
+                            msg.intentClassification.reasoning
+                        ) {
                             contentHtml += `
-                                <div class="classification-reasoning">
-                                    🎯 Намерение: ${escapeHtml(msg.intentClassification.reasoning)}
-                                </div>
-                            `;
+            <div class="classification-reasoning">
+              Намерение: ${escapeHtml(msg.intentClassification.reasoning)}
+            </div>
+          `
                         }
 
-                        // Show role assignment if available
                         if (msg.roleAssignment && msg.roleAssignment.primary_role) {
                             contentHtml += `
-                                <div class="role-assignment">
-                                    <div class="role-assignment-title">👤 К кому обратиться:</div>
-                            `;
-
-                            // Primary role
-                            const primary = msg.roleAssignment.primary_role;
+            <div class="role-assignment">
+              <div class="role-assignment-title">К кому обратиться:</div>
+          `
+                            const primary = msg.roleAssignment.primary_role
                             contentHtml += `
-                                <div class="role-info">
-                                    <div class="role-info-label">Ответственный:</div>
-                                    <div class="role-info-title">${escapeHtml(primary.title)}</div>
-                                    ${primary.position ? `<div class="role-info-position">${escapeHtml(primary.position)}</div>` : ''}
-                                    <div class="role-info-path">${escapeHtml(primary.path.join(' → '))}</div>
-                                </div>
-                            `;
-
-                            // Escalation role
+            <div class="role-info">
+              <div class="role-info-label">Ответственный:</div>
+              <div class="role-info-title">${escapeHtml(primary.title)}</div>
+              ${primary.position
+                                    ? `<div class="role-info-position">${escapeHtml(
+                                        primary.position
+                                    )}</div>`
+                                    : ''
+                                }
+              <div class="role-info-path">${escapeHtml(
+                                    primary.path.join(' → ')
+                                )}</div>
+            </div>
+          `
                             if (msg.roleAssignment.escalation_role) {
-                                const escalation = msg.roleAssignment.escalation_role;
+                                const e = msg.roleAssignment.escalation_role
                                 contentHtml += `
-                                    <div class="role-info">
-                                        <div class="role-info-label">Эскалация:</div>
-                                        <div class="role-info-title">${escapeHtml(escalation.title)}</div>
-                                        ${escalation.position ? `<div class="role-info-position">${escapeHtml(escalation.position)}</div>` : ''}
-                                        <div class="role-info-path">${escapeHtml(escalation.path.join(' → '))}</div>
-                                    </div>
-                                `;
+              <div class="role-info">
+                <div class="role-info-label">Эскалация:</div>
+                <div class="role-info-title">${escapeHtml(e.title)}</div>
+                ${e.position
+                                        ? `<div class="role-info-position">${escapeHtml(
+                                            e.position
+                                        )}</div>`
+                                        : ''
+                                    }
+                <div class="role-info-path">${escapeHtml(
+                                        e.path.join(' → ')
+                                    )}</div>
+              </div>
+            `
                             }
-
-                            // Coordination role
                             if (msg.roleAssignment.coordination_role) {
-                                const coordination = msg.roleAssignment.coordination_role;
+                                const c = msg.roleAssignment.coordination_role
                                 contentHtml += `
-                                    <div class="role-info">
-                                        <div class="role-info-label">Координация:</div>
-                                        <div class="role-info-title">${escapeHtml(coordination.title)}</div>
-                                        ${coordination.position ? `<div class="role-info-position">${escapeHtml(coordination.position)}</div>` : ''}
-                                        <div class="role-info-path">${escapeHtml(coordination.path.join(' → '))}</div>
-                                    </div>
-                                `;
+              <div class="role-info">
+                <div class="role-info-label">Координация:</div>
+                <div class="role-info-title">${escapeHtml(c.title)}</div>
+                ${c.position
+                                        ? `<div class="role-info-position">${escapeHtml(
+                                            c.position
+                                        )}</div>`
+                                        : ''
+                                    }
+                <div class="role-info-path">${escapeHtml(
+                                        c.path.join(' → ')
+                                    )}</div>
+              </div>
+            `
                             }
-
-                            // Show matched key and reason
                             if (msg.roleAssignment.matched_key) {
                                 contentHtml += `
-                                    <div class="classification-reasoning" style="margin-top: 8px;">
-                                        🔑 Matched: ${escapeHtml(msg.roleAssignment.matched_key)}
-                                    </div>
-                                `;
+              <div class="classification-reasoning" style="margin-top:8px;">
+                Совпадение: ${escapeHtml(msg.roleAssignment.matched_key)}
+              </div>
+            `
                             }
                             if (msg.roleAssignment.reason) {
                                 contentHtml += `
-                                    <div class="classification-reasoning">
-                                        💬 ${escapeHtml(msg.roleAssignment.reason)}
-                                    </div>
-                                `;
+              <div class="classification-reasoning">
+                ${escapeHtml(msg.roleAssignment.reason)}
+              </div>
+            `
                             }
-
-                            contentHtml += `</div>`;
+                            contentHtml += `</div>`
                         }
                     }
                 }
 
-                contentHtml += '</div>';
-                messageDiv.innerHTML = contentHtml;
-                container.appendChild(messageDiv);
-            });
+                contentHtml += '</div>'
+                messageDiv.innerHTML = contentHtml
+                container.appendChild(messageDiv)
+            })
 
-            container.scrollTop = container.scrollHeight;
+            container.scrollTop = container.scrollHeight
         }
 
-        // Classify message using LLM (via API) - Department classification
+        // ======= CLASSIFIERS =======
+        function attachClassificationMetaToMessage(originalContent, classification, intentClassification, roleAssignment) {
+            try {
+                if (!originalContent || !Array.isArray(state.messages)) return
+                for (let i = state.messages.length - 1; i >= 0; i--) {
+                    const m = state.messages[i]
+                    if (m && m.role === 'user' && m.content === originalContent) {
+                        if (classification) m.classification = classification
+                        if (intentClassification) m.intentClassification = intentClassification
+                        if (roleAssignment) m.roleAssignment = roleAssignment
+                        break
+                    }
+                }
+            } catch (_) { }
+        }
         async function classifyMessage(message) {
             try {
-                const response = await fetch(`${API_BASE}/classifier/classify?session_id=${state.activeSession}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ message })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Classification failed');
-                }
-
-                const data = await response.json();
-                return data.classification;
+                const response = await fetch(
+                    `${API_BASE}/classifier/classify?session_id=${state.activeSession}`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message }),
+                    }
+                )
+                if (!response.ok) throw new Error('Classification failed')
+                const data = await response.json()
+                return data.classification
             } catch (error) {
-                console.error('Classification error:', error);
-                // Fallback to default classification
+                console.error('Classification error:', error)
                 return {
                     category: 'other',
                     priority: 'medium',
-                    reasoning: 'Classification unavailable',
-                    confidence: 0.5
-                };
+                    reasoning: 'Классификация недоступна',
+                    confidence: 0.5,
+                }
             }
         }
 
-        // Classify intent using LLM (via API) - Intent classification
         async function classifyIntent(message) {
             try {
-                const response = await fetch(`${API_BASE}/classifier/classify-intent?session_id=${state.activeSession}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ message })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Intent classification failed');
-                }
-
-                const data = await response.json();
-                return data.classification;
+                const response = await fetch(
+                    `${API_BASE}/classifier/classify-intent?session_id=${state.activeSession}`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message }),
+                    }
+                )
+                if (!response.ok) throw new Error('Intent classification failed')
+                const data = await response.json()
+                return data.classification
             } catch (error) {
-                console.error('Intent classification error:', error);
-                // Fallback to default classification
+                console.error('Intent classification error:', error)
                 return {
                     intent: 'other',
-                    reasoning: 'Intent classification unavailable',
-                    confidence: 0.5
-                };
+                    reasoning: 'Классификация намерения недоступна',
+                    confidence: 0.5,
+                }
             }
         }
 
-        // Assign role based on message, domain, and intent
         async function assignRole(message, domain, intent) {
             try {
-                const response = await fetch(`${API_BASE}/classifier/assign-role?session_id=${state.activeSession}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ message, domain, intent })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Role assignment failed');
-                }
-
-                const data = await response.json();
-                return data.assignment;
+                const response = await fetch(
+                    `${API_BASE}/classifier/assign-role?session_id=${state.activeSession}`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message, domain, intent }),
+                    }
+                )
+                if (!response.ok) throw new Error('Role assignment failed')
+                const data = await response.json()
+                return data.assignment
             } catch (error) {
-                console.error('Role assignment error:', error);
-                return null;
+                console.error('Role assignment error:', error)
+                return null
             }
         }
 
+        // ======= SEND MESSAGE / STREAM =======
         async function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const message = input.value.trim();
+            const input = document.getElementById('messageInput')
+            const message = input.value.trim()
+            if (!message) return
 
-            if (!message) return;
+            const sendBtn = document.getElementById('sendBtn')
+            sendBtn.disabled = true
+            input.disabled = true
 
-            const sendBtn = document.getElementById('sendBtn');
-            sendBtn.disabled = true;
-            input.disabled = true;
-
-            // Add user message immediately (without classification yet)
             const userMessage = {
                 role: 'user',
                 content: message,
                 classification: null,
                 intentClassification: null,
-                roleAssignment: null
-            };
-            state.messages.push(userMessage);
-            renderMessages();
-            input.value = '';
+                roleAssignment: null,
+            }
+            state.messages.push(userMessage)
+            renderMessages()
+            input.value = ''
 
-            // Create assistant message placeholder
-            const assistantMsg = { role: 'assistant', content: '' };
-            state.messages.push(assistantMsg);
-            renderMessages();
+            const assistantMsg = { role: 'assistant', content: '' }
+            state.messages.push(assistantMsg)
+            renderMessages()
 
-            // Start all three classifications in parallel
-            const classificationPromise = classifyMessage(message).then(classification => {
-                // Update user message with department classification when ready
-                userMessage.classification = classification;
-                renderMessages();
-                return classification;
-            });
-
-            const intentClassificationPromise = classifyIntent(message).then(intentClassification => {
-                // Update user message with intent classification when ready
-                userMessage.intentClassification = intentClassification;
-                renderMessages();
-                return intentClassification;
-            });
-
-            // After both classifications complete, assign role if applicable
-            Promise.all([classificationPromise, intentClassificationPromise]).then(([classification, intentClassification]) => {
-                // Only assign role for access_request or information_request
-                if (intentClassification && (intentClassification.intent === 'access_request' || intentClassification.intent === 'information_request')) {
-                    const domain = classification ? classification.category : null;
-                    assignRole(message, domain, intentClassification.intent).then(roleAssignment => {
-                        if (roleAssignment) {
-                            userMessage.roleAssignment = roleAssignment;
-                            renderMessages();
-                        }
-                    });
+            const classificationPromise = classifyMessage(message).then(
+                (classification) => {
+                    userMessage.classification = classification
+                    attachClassificationMetaToMessage(message, classification, null, null)
+                    renderMessages()
+                    return classification
                 }
-            });
+            )
+            const intentClassificationPromise = classifyIntent(message).then(
+                (intentClassification) => {
+                    userMessage.intentClassification = intentClassification
+                    attachClassificationMetaToMessage(message, null, intentClassification, null)
+                    renderMessages()
+                    return intentClassification
+                }
+            )
+
+            Promise.all([classificationPromise, intentClassificationPromise]).then(
+                ([classification, intentClassification]) => {
+                    if (
+                        intentClassification &&
+                        (intentClassification.intent === 'access_request' ||
+                            intentClassification.intent === 'information_request')
+                    ) {
+                        const domain = classification ? classification.category : null
+                        assignRole(message, domain, intentClassification.intent).then(
+                            (roleAssignment) => {
+                                if (roleAssignment) {
+                                    userMessage.roleAssignment = roleAssignment
+                                    attachClassificationMetaToMessage(message, null, null, roleAssignment)
+                                    renderMessages()
+                                }
+                            }
+                        )
+                    }
+                }
+            )
 
             try {
-                const response = await fetch(`${API_BASE}/chatbot/chat/stream?session_id=${state.activeSession}&user_id=${state.userId}&use_react_agent=true`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ messages: state.messages.slice(0, -1) })
-                });
+                const response = await fetch(
+                    `${API_BASE}/chatbot/chat/stream?session_id=${state.activeSession}&user_id=${state.userId}&use_react_agent=true`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        // Send only the new user message; LangGraph will append it to existing history
+                        body: JSON.stringify({ messages: [userMessage] }),
+                    }
+                )
+                if (!response.ok) throw new Error('Failed to send message')
 
-                if (!response.ok) throw new Error('Failed to send message');
-
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
+                const reader = response.body.getReader()
+                const decoder = new TextDecoder()
 
                 while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
+                    const { done, value } = await reader.read()
+                    if (done) break
 
-                    const chunk = decoder.decode(value);
-                    const lines = chunk.split('\n');
+                    const chunk = decoder.decode(value)
+                    const lines = chunk.split('\n')
 
                     for (const line of lines) {
                         if (line.startsWith('data: ')) {
                             try {
-                                const data = JSON.parse(line.substring(6));
+                                const data = JSON.parse(line.substring(6))
                                 if (!data.done && data.content) {
-                                    assistantMsg.content += data.content;
-                                    renderMessages();
+                                    assistantMsg.content += data.content
+                                    renderMessages()
                                 }
                             } catch (e) {
-                                console.error('Error parsing chunk:', e);
+                                console.error('Error parsing chunk:', e)
                             }
                         }
                     }
                 }
             } catch (error) {
-                assistantMsg.content = 'Error: ' + error.message;
-                renderMessages();
+                assistantMsg.content = 'Ошибка: ' + error.message
+                renderMessages()
             } finally {
-                sendBtn.disabled = false;
-                input.disabled = false;
-                input.focus();
-                // Reload entities after sending message
-                loadEntities();
+                sendBtn.disabled = false
+                input.disabled = false
+                input.focus()
+                loadEntities()
             }
         }
 
         async function clearChat() {
-            if (!confirm('Are you sure you want to clear all messages?')) return;
-
+            if (!confirm('Очистить все сообщения?')) return
             try {
-                await fetch(`${API_BASE}/chatbot/messages?session_id=${state.activeSession}`, {
-                    method: 'DELETE'
-                });
-
-                state.messages = [];
-                renderMessages();
-                showToast('Chat cleared', 'info');
+                await fetch(
+                    `${API_BASE}/chatbot/messages?session_id=${state.activeSession}`,
+                    {
+                        method: 'DELETE',
+                    }
+                )
+                state.messages = []
+                renderMessages()
+                showToast('Чат очищен', 'info')
             } catch (error) {
-                showToast('Failed to clear chat: ' + error.message, 'error');
+                showToast('Не удалось очистить чат: ' + error.message, 'error')
             }
         }
 
-        // Entity Functions
+        // ======= ENTITIES =======
         async function loadEntities() {
             if (!state.activeSession) {
-                console.log('No active session, clearing entities');
-                state.entities = [];
-                state.filteredEntities = [];
-                renderEntities();
-                return;
+                console.log('No active session, clearing entities')
+                state.entities = []
+                state.filteredEntities = []
+                renderEntities()
+                return
             }
 
-            const userId = state.userId; // Capture current user for consistency check
-            const sessionId = state.activeSession; // Capture current session
-            console.log('Loading entities for user:', userId, 'session:', sessionId);
+            const userId = state.userId
+            const sessionId = state.activeSession
+            console.log('Loading entities for user:', userId, 'session:', sessionId)
 
             try {
-                const response = await fetch(`${API_BASE}/entities/entities?user_id=${userId}`);
+                const response = await fetch(
+                    `${API_BASE}/entities/entities?user_id=${userId}`
+                )
 
-                // CRITICAL: Check if user or session changed while loading
                 if (state.userId !== userId || state.activeSession !== sessionId) {
-                    console.log('User or session changed during load, discarding old entities');
-                    return;
+                    console.log(
+                        'User or session changed during load, discarding old entities'
+                    )
+                    return
                 }
 
                 if (!response.ok) {
                     if (response.status === 404 || response.status === 500) {
-                        // No entities yet or session not found
-                        console.log('No entities found or error');
-                        if (state.userId === userId && state.activeSession === sessionId) {
-                            state.entities = [];
-                            state.filteredEntities = [];
-                            renderEntities();
+                        console.log('No entities found or error')
+                        if (
+                            state.userId === userId &&
+                            state.activeSession === sessionId
+                        ) {
+                            state.entities = []
+                            state.filteredEntities = []
+                            renderEntities()
                         }
-                        return;
+                        return
                     }
-                    throw new Error('Failed to load entities');
+                    throw new Error('Failed to load entities')
                 }
 
-                const data = await response.json();
-                console.log('Loaded entities:', data.entities?.length || 0);
+                const data = await response.json()
+                console.log('Loaded entities:', data.entities?.length || 0)
 
-                // Triple-check user and session didn't change before updating state
                 if (state.userId === userId && state.activeSession === sessionId) {
-                    state.entities = data.entities || [];
-                    filterEntities(state.entityFilter);
-                    console.log('Entities rendered for user:', userId);
+                    state.entities = data.entities || []
+                    filterEntities(state.entityFilter)
+                    console.log('Entities rendered for user:', userId)
                 } else {
-                    console.log('User or session changed after load, not rendering');
+                    console.log('User or session changed after load, not rendering')
                 }
             } catch (error) {
-                console.error('Failed to load entities:', error);
-                // Only update if we're still on the same user and session
+                console.error('Failed to load entities:', error)
                 if (state.userId === userId && state.activeSession === sessionId) {
-                    state.entities = [];
-                    state.filteredEntities = [];
-                    renderEntities();
+                    state.entities = []
+                    state.filteredEntities = []
+                    renderEntities()
                 }
             }
         }
 
         function filterEntities(filter) {
-            state.entityFilter = filter;
+            state.entityFilter = filter
 
-            // Update active filter button
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event?.target?.classList.add('active');
+            document.querySelectorAll('.filter-btn').forEach((btn) => {
+                btn.classList.remove('active')
+            })
+            event?.target?.classList.add('active')
 
-            // Filter entities
             if (filter === 'all') {
-                state.filteredEntities = state.entities;
+                state.filteredEntities = state.entities
             } else {
-                state.filteredEntities = state.entities.filter(e => e.entity_type === filter);
+                state.filteredEntities = state.entities.filter(
+                    (e) => e.entity_type === filter
+                )
             }
 
-            renderEntities();
+            renderEntities()
         }
 
         function renderEntities() {
-            const container = document.getElementById('entitiesList');
-            const statsEl = document.getElementById('entitiesStats');
+            const container = document.getElementById('entitiesList')
+            const statsEl = document.getElementById('entitiesStats')
 
-            statsEl.textContent = `${state.entities.length} entities extracted`;
+            statsEl.textContent = `${state.entities.length} извлечённых сущностей`
 
             if (state.filteredEntities.length === 0) {
-                container.innerHTML = '<div class="no-entities">No entities found for this filter.</div>';
-                return;
+                container.innerHTML =
+                    '<div class="no-entities">По этому фильтру ничего не найдено.</div>'
+                return
             }
 
-            container.innerHTML = '';
+            container.innerHTML = ''
 
-            state.filteredEntities.forEach(entity => {
-                const entityDiv = document.createElement('div');
-                entityDiv.className = `entity-item entity-colors-${entity.entity_type}`;
+            state.filteredEntities.forEach((entity) => {
+                const entityDiv = document.createElement('div')
+                entityDiv.className = `entity-item entity-colors-${entity.entity_type}`
 
-                const date = new Date(entity.created_at).toLocaleDateString('en-US', {
+                const date = new Date(entity.created_at).toLocaleDateString('ru-RU', {
                     month: 'short',
                     day: 'numeric',
                     hour: '2-digit',
-                    minute: '2-digit'
-                });
+                    minute: '2-digit',
+                })
 
                 entityDiv.innerHTML = `
-                    <div class="entity-type">${entity.entity_type.replace('_', ' ')}</div>
-                    <div class="entity-value">${escapeHtml(entity.entity_value)}</div>
-                    ${entity.context ? `<div class="entity-context">${escapeHtml(entity.context)}</div>` : ''}
-                    <div class="entity-date">${date}</div>
-                `;
-
-                container.appendChild(entityDiv);
-            });
+      <div class="entity-type">${entity.entity_type.replace('_', ' ')}</div>
+      <div class="entity-value">${escapeHtml(entity.entity_value)}</div>
+      ${entity.context
+                        ? `<div class="entity-context">${escapeHtml(entity.context)}</div>`
+                        : ''
+                    }
+      <div class="entity-date">${date}</div>
+    `
+                container.appendChild(entityDiv)
+            })
         }
 
-        // Utility Functions
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML.replace(/\n/g, '<br>');
-        }
-
-        // Tab Management
+        // ======= TABS =======
         function switchTab(tabName) {
-            console.log('Switching to tab:', tabName);
+            console.log('Switching to tab:', tabName)
 
-            // Hide all tabs
-            const chatTab = document.getElementById('chatTab');
-            const collectionsTab = document.getElementById('collectionsTab');
-
+            const chatTab = document.getElementById('chatTab')
+            const collectionsTab = document.getElementById('collectionsTab')
             if (!chatTab || !collectionsTab) {
-                console.error('Tab elements not found');
-                return;
+                console.error('Tab elements not found')
+                return
             }
 
-            chatTab.classList.remove('active');
-            collectionsTab.classList.remove('active');
+            chatTab.classList.remove('active')
+            collectionsTab.classList.remove('active')
 
-            // Remove active class from all tab buttons
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
+            document
+                .querySelectorAll('.tab-btn')
+                .forEach((btn) => btn.classList.remove('active'))
 
-            // Show selected tab
             if (tabName === 'chat') {
-                chatTab.classList.add('active');
-                const chatBtn = document.querySelector('.tab-btn[onclick*="chat"]');
-                if (chatBtn) chatBtn.classList.add('active');
+                chatTab.classList.add('active')
+                const chatBtn = document.querySelector('.tab-btn[onclick*="chat"]')
+                if (chatBtn) chatBtn.classList.add('active')
             } else if (tabName === 'collections') {
-                collectionsTab.classList.add('active');
-                const collectionsBtn = document.querySelector('.tab-btn[onclick*="collections"]');
-                if (collectionsBtn) collectionsBtn.classList.add('active');
-                loadCollections();
+                collectionsTab.classList.add('active')
+                const collectionsBtn = document.querySelector(
+                    '.tab-btn[onclick*="collections"]'
+                )
+                if (collectionsBtn) collectionsBtn.classList.add('active')
+                loadCollections()
             }
         }
 
-        // Collections Management
-        let collections = [];
+        // ======= COLLECTIONS =======
+        let collections = []
 
         async function loadCollections() {
             try {
-                const response = await fetch(`${API_BASE}/documents/collections`);
-                if (!response.ok) throw new Error('Failed to load collections');
-
-                collections = await response.json();
-                renderCollections();
-                updateCollectionSelectors();
+                const response = await fetch(`${API_BASE}/documents/collections`)
+                if (!response.ok) throw new Error('Failed to load collections')
+                collections = await response.json()
+                renderCollections()
+                updateCollectionSelectors()
             } catch (error) {
-                console.error('Failed to load collections:', error);
-                showToast('Failed to load collections: ' + error.message, 'error');
+                console.error('Failed to load collections:', error)
+                showToast('Не удалось загрузить коллекции: ' + error.message, 'error')
             }
         }
 
         function renderCollections() {
-            const container = document.getElementById('collectionsList');
+            const container = document.getElementById('collectionsList')
 
             if (collections.length === 0) {
-                container.innerHTML = '<div style="color: #64748b; text-align: center; padding: 20px;">No collections yet. Create one to get started!</div>';
-                return;
+                container.innerHTML =
+                    '<div style="color:#64748b;text-align:center;padding:20px;">Коллекций пока нет. Создайте новую, чтобы начать.</div>'
+                return
             }
 
-            container.innerHTML = '';
+            container.innerHTML = ''
 
-            collections.forEach(col => {
-                const colDiv = document.createElement('div');
-                colDiv.className = 'collection-card';
+            collections.forEach((col) => {
+                const colDiv = document.createElement('div')
+                colDiv.className = 'collection-card'
 
                 colDiv.innerHTML = `
-                    <div class="collection-header">
-                        <div class="collection-name">${escapeHtml(col.name)}</div>
-                        <div class="collection-actions">
-                            <button class="btn-clear" onclick="clearCollection('${escapeHtml(col.name)}')">🧹 Clear</button>
-                            <button class="btn-delete" onclick="deleteCollection('${escapeHtml(col.name)}')">🗑️ Delete</button>
-                        </div>
-                    </div>
-                    <div class="collection-stats">
-                        <div class="stat-item">
-                            <span>📊</span>
-                            <span>${col.vectors_count} vectors</span>
-                        </div>
-                        <div class="stat-item">
-                            <span>📏</span>
-                            <span>Size: ${col.vector_size}</span>
-                        </div>
-                    </div>
-                `;
-
-                container.appendChild(colDiv);
-            });
+      <div class="collection-header">
+        <div class="collection-name">${escapeHtml(col.name)}</div>
+        <div class="collection-actions">
+          <button class="btn-clear" onclick="clearCollection('${escapeHtml(
+                    col.name
+                )}')">Очистить</button>
+          <button class="btn-delete" onclick="deleteCollection('${escapeHtml(
+                    col.name
+                )}')">Удалить</button>
+        </div>
+      </div>
+      <div class="collection-stats">
+        <div class="stat-item"><span>${col.vectors_count} векторов</span></div>
+        <div class="stat-item"><span>Размер: ${col.vector_size}</span></div>
+      </div>
+    `
+                container.appendChild(colDiv)
+            })
         }
 
         function updateCollectionSelectors() {
-            const selector = document.getElementById('uploadCollection');
-            selector.innerHTML = '<option value="">Default Collection</option>';
-
-            collections.forEach(col => {
-                const option = document.createElement('option');
-                option.value = col.name;
-                option.textContent = col.name;
-                selector.appendChild(option);
-            });
+            const selector = document.getElementById('uploadCollection')
+            selector.innerHTML = '<option value="">Коллекция по умолчанию</option>'
+            collections.forEach((col) => {
+                const option = document.createElement('option')
+                option.value = col.name
+                option.textContent = col.name
+                selector.appendChild(option)
+            })
         }
 
         async function createCollection() {
-            const name = document.getElementById('collectionName').value.trim();
-            const embeddingSize = parseInt(document.getElementById('embeddingSize').value);
-            const distance = document.getElementById('distanceMetric').value;
+            const name = document.getElementById('collectionName').value.trim()
+            const embeddingSize = parseInt(
+                document.getElementById('embeddingSize').value
+            )
+            const distance = document.getElementById('distanceMetric').value
 
             if (!name) {
-                showToast('Please enter a collection name', 'error');
-                return;
+                showToast('Введите название коллекции', 'error')
+                return
             }
 
             try {
                 const response = await fetch(`${API_BASE}/documents/collections`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        name: name,
+                        name,
                         embedding_size: embeddingSize,
-                        distance: distance
-                    })
-                });
-
+                        distance,
+                    }),
+                })
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.detail || 'Failed to create collection');
+                    const error = await response.json()
+                    throw new Error(error.detail || 'Failed to create collection')
                 }
 
-                showToast('Collection created successfully!', 'success');
-                document.getElementById('collectionName').value = '';
-                await loadCollections();
+                showToast('Коллекция успешно создана', 'success')
+                document.getElementById('collectionName').value = ''
+                await loadCollections()
             } catch (error) {
-                console.error('Failed to create collection:', error);
-                showToast('Failed to create collection: ' + error.message, 'error');
+                console.error('Failed to create collection:', error)
+                showToast('Не удалось создать коллекцию: ' + error.message, 'error')
             }
         }
 
         async function deleteCollection(collectionName) {
-            if (!confirm(`Are you sure you want to delete collection "${collectionName}"? This action cannot be undone.`)) {
-                return;
-            }
-
+            if (
+                !confirm(
+                    `Удалить коллекцию "${collectionName}"? Это действие необратимо.`
+                )
+            )
+                return
             try {
-                const response = await fetch(`${API_BASE}/documents/collections/${encodeURIComponent(collectionName)}`, {
-                    method: 'DELETE'
-                });
-
-                if (!response.ok) throw new Error('Failed to delete collection');
-
-                showToast('Collection deleted successfully', 'success');
-                await loadCollections();
+                const response = await fetch(
+                    `${API_BASE}/documents/collections/${encodeURIComponent(
+                        collectionName
+                    )}`,
+                    { method: 'DELETE' }
+                )
+                if (!response.ok) throw new Error('Failed to delete collection')
+                showToast('Коллекция удалена', 'success')
+                await loadCollections()
             } catch (error) {
-                console.error('Failed to delete collection:', error);
-                showToast('Failed to delete collection: ' + error.message, 'error');
+                console.error('Failed to delete collection:', error)
+                showToast('Не удалось удалить коллекцию: ' + error.message, 'error')
             }
         }
 
         async function clearCollection(collectionName) {
-            if (!confirm(`Are you sure you want to clear all documents from collection "${collectionName}"?`)) {
-                return;
-            }
-
+            if (!confirm(`Очистить все документы в коллекции "${collectionName}"?`))
+                return
             try {
-                const response = await fetch(`${API_BASE}/documents/collections/${encodeURIComponent(collectionName)}/clear`, {
-                    method: 'POST'
-                });
-
-                if (!response.ok) throw new Error('Failed to clear collection');
-
-                showToast('Collection cleared successfully', 'success');
-                await loadCollections();
+                const response = await fetch(
+                    `${API_BASE}/documents/collections/${encodeURIComponent(
+                        collectionName
+                    )}/clear`,
+                    { method: 'POST' }
+                )
+                if (!response.ok) throw new Error('Failed to clear collection')
+                showToast('Коллекция очищена', 'success')
+                await loadCollections()
             } catch (error) {
-                console.error('Failed to clear collection:', error);
-                showToast('Failed to clear collection: ' + error.message, 'error');
+                console.error('Failed to clear collection:', error)
+                showToast('Не удалось очистить коллекцию: ' + error.message, 'error')
             }
         }
 
-        // File Upload Handling
+        // ======= UPLOADS =======
         function handleFileSelect(event) {
-            const files = event.target.files;
-            uploadFiles(files);
+            const files = event.target.files
+            uploadFiles(files)
         }
 
-        // Drag and drop support - initialize when DOM is ready
         function initDragAndDrop() {
-            const uploadArea = document.getElementById('uploadArea');
-
+            const uploadArea = document.getElementById('uploadArea')
             if (!uploadArea) {
-                console.warn('Upload area not found, skipping drag and drop initialization');
-                return;
+                console.warn(
+                    'Upload area not found, skipping drag and drop initialization'
+                )
+                return
             }
-
             uploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                uploadArea.classList.add('dragging');
-            });
-
+                e.preventDefault()
+                uploadArea.classList.add('dragging')
+            })
             uploadArea.addEventListener('dragleave', () => {
-                uploadArea.classList.remove('dragging');
-            });
-
+                uploadArea.classList.remove('dragging')
+            })
             uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadArea.classList.remove('dragging');
-
-                const files = e.dataTransfer.files;
-                uploadFiles(files);
-            });
+                e.preventDefault()
+                uploadArea.classList.remove('dragging')
+                const files = e.dataTransfer.files
+                uploadFiles(files)
+            })
         }
 
-        // Chunker descriptions
         const chunkerDescriptions = {
-            'token': '<strong>Token-Based:</strong> Splits text into fixed-size chunks based on tokens. Fast and predictable. Best for general purposes and consistent chunk sizes.',
-            'sentence': '<strong>Sentence-Based:</strong> Preserves complete sentences and ensures natural boundaries. Ideal for maintaining readability and context in search results.',
-            'recursive': '<strong>Recursive (Hierarchical):</strong> Splits text hierarchically by paragraphs, then sentences. Best for structured documents like documentation or articles.',
-            'semantic': '<strong>Semantic (AI-Powered):</strong> Groups text by semantic similarity using embeddings. Best for complex documents where topical coherence matters. Slower but more intelligent.',
-            'slumber': '<strong>Slumber (LLM-Powered):</strong> Uses your LLM (Llama 3.3 70B) to intelligently determine optimal chunk boundaries. Agentic chunking that understands context deeply. Best for premium quality and complex reasoning. Slowest but smartest.'
-        };
+            token:
+                '<strong>Токенный:</strong> Делит текст на фиксированные куски по токенам. Быстро и предсказуемо. Универсальный вариант.',
+            sentence:
+                '<strong>По предложениям:</strong> Сохраняет границы предложений. Удобно для читабельности результатов.',
+            recursive:
+                '<strong>Рекурсивный:</strong> Иерархично делит по абзацам, затем по предложениям. Подходит для структурированных документов.',
+            semantic:
+                '<strong>Семантический:</strong> Группирует по смысловой близости (эмбеддинги). Лучше для сложных текстов, медленнее.',
+            slumber:
+                '<strong>LLM-подход:</strong> Использует LLM для умного выбора границ. Максимальное качество, самый медленный.',
+        }
 
         function updateChunkerDescription() {
-            const chunkerType = document.getElementById('chunkerType').value;
-            const descriptionDiv = document.getElementById('chunkerDescription');
-            descriptionDiv.innerHTML = chunkerDescriptions[chunkerType] || '';
+            const chunkerType = document.getElementById('chunkerType').value
+            const descriptionDiv = document.getElementById('chunkerDescription')
+            descriptionDiv.innerHTML = chunkerDescriptions[chunkerType] || ''
         }
 
         async function uploadFiles(files) {
-            if (files.length === 0) return;
+            if (files.length === 0) return
 
-            const collectionName = document.getElementById('uploadCollection').value;
-            const chunkerType = document.getElementById('chunkerType').value;
-            const progressDiv = document.getElementById('uploadProgress');
-            progressDiv.style.display = 'block';
-            progressDiv.innerHTML = `Uploading ${files.length} file(s)...`;
+            const collectionName = document.getElementById('uploadCollection').value
+            const chunkerType = document.getElementById('chunkerType').value
+            const progressDiv = document.getElementById('uploadProgress')
+            progressDiv.style.display = 'block'
+            progressDiv.innerHTML = `Загружаем файлов: ${files.length}…`
 
-            let successCount = 0;
-            let errorCount = 0;
+            let successCount = 0
+            let errorCount = 0
 
             for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-
+                const file = files[i]
                 try {
-                    const formData = new FormData();
-                    formData.append('file', file);
+                    const formData = new FormData()
+                    formData.append('file', file)
 
-                    let url = `${API_BASE}/documents/upload?user_id=${state.userId}`;
-                    if (collectionName) {
-                        url += `&collection_name=${encodeURIComponent(collectionName)}`;
-                    }
-                    url += `&chunker_type=${encodeURIComponent(chunkerType)}`;
+                    let url = `${API_BASE}/documents/upload?user_id=${state.userId}`
+                    if (collectionName)
+                        url += `&collection_name=${encodeURIComponent(collectionName)}`
+                    url += `&chunker_type=${encodeURIComponent(chunkerType)}`
 
                     const response = await fetch(url, {
                         method: 'POST',
-                        body: formData
-                    });
-
+                        body: formData,
+                    })
                     if (!response.ok) {
-                        const error = await response.json();
-                        throw new Error(error.detail || 'Upload failed');
+                        const error = await response.json()
+                        throw new Error(error.detail || 'Upload failed')
                     }
 
-                    const result = await response.json();
-                    successCount++;
-
-                    progressDiv.innerHTML = `Uploaded ${successCount}/${files.length} files... (${result.chunks_count} chunks from ${file.name})`;
+                    const result = await response.json()
+                    successCount++
+                    progressDiv.innerHTML = `Загружено ${successCount}/${files.length}… (${result.chunks_count} чанков из ${file.name})`
                 } catch (error) {
-                    console.error(`Failed to upload ${file.name}:`, error);
-                    errorCount++;
-                    progressDiv.innerHTML = `Uploaded ${successCount}/${files.length} files... Error: ${file.name}`;
+                    console.error(`Failed to upload ${file.name}:`, error)
+                    errorCount++
+                    progressDiv.innerHTML = `Загружено ${successCount}/${files.length}… Ошибка: ${file.name}`
                 }
             }
 
             if (errorCount === 0) {
-                showToast(`Successfully uploaded ${successCount} file(s)!`, 'success');
+                showToast(`Успешно загружено файлов: ${successCount}`, 'success')
             } else {
-                showToast(`Uploaded ${successCount} file(s), ${errorCount} failed`, 'error');
+                showToast(
+                    `Загружено: ${successCount}, ошибок: ${errorCount}`,
+                    'error'
+                )
             }
 
             setTimeout(() => {
-                progressDiv.style.display = 'none';
-                progressDiv.innerHTML = '';
-            }, 3000);
+                progressDiv.style.display = 'none'
+                progressDiv.innerHTML = ''
+            }, 3000)
 
-            // Clear file input
-            document.getElementById('fileInput').value = '';
-
-            // Reload collections to update counts
-            await loadCollections();
+            document.getElementById('fileInput').value = ''
+            await loadCollections()
         }
 
-        // Initialize - load sessions automatically on page load
+        // ======= INIT =======
         window.addEventListener('DOMContentLoaded', async () => {
-            // Set user ID input field to match current state
-            document.getElementById('userIdInput').value = state.userId;
+            document.getElementById('userIdInput').value = state.userId
 
-            // Initialize drag and drop
-            initDragAndDrop();
+            initDragAndDrop()
 
-            // Initialize chunker description
-            const chunkerTypeSelect = document.getElementById('chunkerType');
+            const chunkerTypeSelect = document.getElementById('chunkerType')
             if (chunkerTypeSelect) {
-                chunkerTypeSelect.addEventListener('change', updateChunkerDescription);
-                updateChunkerDescription(); // Show initial description
+                chunkerTypeSelect.addEventListener('change', updateChunkerDescription)
+                updateChunkerDescription()
             }
 
-            await loadSessions();
+            await loadSessions()
 
-            // Auto-select first session if available
             if (state.sessions.length > 0) {
-                await selectSession(state.sessions[0]);
+                // Restore last active session for this user if available; fallback to the most recent
+                let target = null
+                try {
+                    const saved = localStorage.getItem(`last_session_${state.userId}`)
+                    if (saved) target = state.sessions.find(s => s.session_id === saved)
+                } catch (e) { }
+                if (!target) target = state.sessions[state.sessions.length - 1]
+                if (target) await selectSession(target)
             }
 
-            // Load collections in background
-            loadCollections();
-        });
+            loadCollections()
+        })
+
+        // ======= CLASSIFICATION CORRECTION =======
+        let classificationEditorMessageIndex = null
+
+        async function openClassificationEditor(messageIndex) {
+            const msg = state.messages[messageIndex]
+            if (!msg || msg.role !== 'user') return
+
+            classificationEditorMessageIndex = messageIndex
+
+            // Load categories for select
+            let categoriesHtml = '<option value="">Выберите категорию</option>'
+            try {
+                const response = await fetch('/api/v1/admin/categories')
+                if (response.ok) {
+                    const data = await response.json()
+                    data.categories.forEach(cat => {
+                        categoriesHtml += `<option value="${cat.name}">${cat.display_name}</option>`
+                    })
+                }
+            } catch (e) {
+                console.error('Failed to load categories', e)
+            }
+
+            // Create modal
+            const modal = document.createElement('div')
+            modal.className = 'classification-editor-modal'
+            modal.innerHTML = `
+                <div class="classification-editor-content">
+                    <div class="classification-editor-title">Исправить классификацию</div>
+                    
+                    <div class="classification-editor-message">
+                        <strong>Сообщение:</strong><br>
+                        ${escapeHtml(msg.content)}
+                    </div>
+
+                    <div class="classification-editor-form-group">
+                        <label>Категория</label>
+                        <select class="classification-editor-select" id="correctionCategory">
+                            ${categoriesHtml}
+                        </select>
+                        <div class="classification-editor-current">
+                            Текущая: ${msg.classification ? msg.classification.category : 'не указана'}
+                        </div>
+                    </div>
+
+                    <div class="classification-editor-form-group">
+                        <label>Намерение</label>
+                        <select class="classification-editor-select" id="correctionIntent">
+                            <option value="">Выберите намерение</option>
+                            <option value="task_creation">Создание задачи</option>
+                            <option value="ask_question">Вопрос</option>
+                            <option value="report_issue">Сообщение о проблеме</option>
+                            <option value="request_document">Запрос документа</option>
+                        </select>
+                        <div class="classification-editor-current">
+                            Текущее: ${msg.intentClassification ? msg.intentClassification.intent : 'не указано'}
+                        </div>
+                    </div>
+
+                    <div class="classification-editor-form-group">
+                        <label>Приоритет</label>
+                        <select class="classification-editor-select" id="correctionPriority">
+                            <option value="">Выберите приоритет</option>
+                            <option value="urgent">Срочно</option>
+                            <option value="high">Высокий</option>
+                            <option value="medium">Средний</option>
+                            <option value="low">Низкий</option>
+                        </select>
+                        <div class="classification-editor-current">
+                            Текущий: ${msg.classification ? msg.classification.priority : 'не указан'}
+                        </div>
+                    </div>
+
+                    <div class="classification-editor-form-group">
+                        <label>Комментарий (необязательно)</label>
+                        <textarea class="classification-editor-textarea" id="correctionNotes" 
+                            placeholder="Почему классификация была неправильной?"></textarea>
+                    </div>
+
+                    <div class="classification-editor-buttons">
+                        <button class="classification-editor-cancel" onclick="closeClassificationEditor()">
+                            Отмена
+                        </button>
+                        <button class="classification-editor-submit" onclick="submitClassificationCorrection()">
+                            Сохранить исправление
+                        </button>
+                    </div>
+                </div>
+            `
+
+            // Add click outside to close
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeClassificationEditor()
+                }
+            })
+
+            document.body.appendChild(modal)
+        }
+
+        function closeClassificationEditor() {
+            const modal = document.querySelector('.classification-editor-modal')
+            if (modal) {
+                modal.remove()
+            }
+            classificationEditorMessageIndex = null
+        }
+
+        async function submitClassificationCorrection() {
+            if (classificationEditorMessageIndex === null) return
+
+            const msg = state.messages[classificationEditorMessageIndex]
+            if (!msg) return
+
+            const category = document.getElementById('correctionCategory').value
+            const intent = document.getElementById('correctionIntent').value
+            const priority = document.getElementById('correctionPriority').value
+            const notes = document.getElementById('correctionNotes').value
+
+            // At least one field must be different
+            const hasChanges =
+                (category && category !== msg.classification?.category) ||
+                (intent && intent !== msg.intentClassification?.intent) ||
+                (priority && priority !== msg.classification?.priority)
+
+            if (!hasChanges) {
+                alert('Пожалуйста, измените хотя бы одно значение')
+                return
+            }
+
+            const submitBtn = document.querySelector('.classification-editor-submit')
+            submitBtn.disabled = true
+            submitBtn.textContent = 'Сохранение...'
+
+            try {
+                const response = await fetch('/api/v1/classification/corrections', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_message: msg.content,
+                        session_id: state.activeSession,
+                        user_id: parseInt(state.userId),
+                        predicted_category: msg.classification?.category,
+                        predicted_intent: msg.intentClassification?.intent,
+                        predicted_priority: msg.classification?.priority,
+                        correct_category: category || msg.classification?.category,
+                        correct_intent: intent || msg.intentClassification?.intent,
+                        correct_priority: priority || msg.classification?.priority,
+                        notes: notes || null
+                    })
+                })
+
+                if (!response.ok) {
+                    throw new Error('Failed to save correction')
+                }
+
+                // Update local state
+                if (category && msg.classification) {
+                    msg.classification.category = category
+                }
+                if (intent && msg.intentClassification) {
+                    msg.intentClassification.intent = intent
+                }
+                if (priority && msg.classification) {
+                    msg.classification.priority = priority
+                }
+
+                // Re-render messages
+                renderMessages()
+
+                // Show success message
+                alert('Исправление сохранено! Классификатор будет учитывать это в будущем.')
+
+                closeClassificationEditor()
+            } catch (error) {
+                console.error('Failed to save correction:', error)
+                alert('Ошибка при сохранении исправления')
+                submitBtn.disabled = false
+                submitBtn.textContent = 'Сохранить исправление'
+            }
+        }
     </script>
 </body>
 

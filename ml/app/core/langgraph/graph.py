@@ -388,10 +388,18 @@ class LangGraphAgent:
         if self._graph is None:
             self._graph = await self.create_graph()
 
+        # Get the latest state which contains full message history
         state: StateSnapshot = await sync_to_async(self._graph.get_state)(
             config={"configurable": {"thread_id": session_id}}
         )
-        return self.__process_messages(state.values["messages"]) if state.values else []
+        
+        if not state.values or "messages" not in state.values:
+            return []
+        
+        # The messages list in state contains the full conversation history
+        all_messages = state.values["messages"]
+        
+        return self.__process_messages(all_messages)
 
     def __process_messages(self, messages: list[BaseMessage]) -> list[Message]:
         openai_style_messages = convert_to_openai_messages(messages)

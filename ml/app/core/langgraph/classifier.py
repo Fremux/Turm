@@ -12,6 +12,7 @@ from app.core.config import settings
 from app.core.logging import logger
 from app.schemas.classification import TicketClassification
 from app.models.category import Category
+from app.models.classification_correction import ClassificationExample, ClassificationCorrection
 from app.services.database import database_service
 
 
@@ -59,6 +60,84 @@ class ClassificationAgent:
         except Exception as e:
             logger.error("failed_to_load_categories_for_classification", error=str(e), exc_info=True)
             self._use_fallback_prompt()
+    
+    def _load_few_shot_examples(self, category_names: list[str]) -> str:
+        """Load few-shot examples from database (examples + recent corrections).
+        
+        Args:
+            category_names: List of valid category names
+            
+        Returns:
+            Formatted few-shot examples text
+        """
+        try:
+            with Session(database_service.engine) as session:
+                # Load curated examples (high-quality, manually added)
+                examples = session.exec(
+                    select(ClassificationExample)
+                    .where(ClassificationExample.is_active == True)
+                    .order_by(
+                        ClassificationExample.priority_order.desc(),
+                        ClassificationExample.times_used.desc()
+                    )
+                    .limit(10)  # Top 10 curated examples
+                ).all()
+                
+                # Load recent corrections (learning from user feedback)
+                corrections = session.exec(
+                    select(ClassificationCorrection)
+                    .where(ClassificationCorrection.is_active == True)
+                    .order_by(
+                        ClassificationCorrection.times_used.desc(),
+                        ClassificationCorrection.created_at.desc()
+                    )
+                    .limit(5)  # Top 5 most used corrections
+                ).all()
+                
+                if not examples and not corrections:
+                    return ""
+                
+                # Build few-shot section
+                few_shot_text = "\n## Примеры классификации (обучись на них):\n\n"
+                
+                # Add curated examples
+                if examples:
+                    few_shot_text += "### Эталонные примеры:\n"
+                    for ex in examples:
+                        few_shot_text += f"**Сообщение:** \"{ex.example_text}\"\n"
+                        few_shot_text += f"**Категория:** {ex.category}"
+                        if ex.intent:
+                            few_shot_text += f", **Намерение:** {ex.intent}"
+                        if ex.priority:
+                            few_shot_text += f", **Приоритет:** {ex.priority}"
+                        if ex.reasoning:
+                            few_shot_text += f"\n**Пояснение:** {ex.reasoning}"
+                        few_shot_text += "\n\n"
+                
+                # Add corrections (user feedback) - simplified format
+                if corrections:
+                    few_shot_text += "### Исправления (НЕ делай эти ошибки!):\n"
+                    for corr in corrections:
+                        few_shot_text += f'"{corr.user_message}" → {corr.correct_category}'
+                        if corr.correct_intent:
+                            few_shot_text += f" ({corr.correct_intent})"
+                        few_shot_text += "\n"
+                
+                logger.info(
+                    "few_shot_examples_loaded",
+                    examples_count=len(examples),
+                    corrections_count=len(corrections),
+                    sample_corrections=[
+                        f"{c.user_message[:30]}... {c.predicted_category}->{c.correct_category}"
+                        for c in corrections[:3]
+                    ] if corrections else []
+                )
+                
+                return few_shot_text
+                
+        except Exception as e:
+            logger.error("failed_to_load_few_shot_examples", error=str(e), exc_info=True)
+            return ""
     
     def _generate_system_prompt(self, categories: list[Category]) -> str:
         """Generate system prompt dynamically from categories.
@@ -108,6 +187,9 @@ class ClassificationAgent:
         categories_text += "О чём: любые запросы, которые не относятся к указанным выше категориям. Это могут быть общие вопросы, личные обращения, нерабочие темы, неясные или нерелевантные сообщения.\n\n"
         categories_text += "Примеры: вопросы о погоде, личные беседы, поздравления, запросы не связанные с работой компании, неясные или бессвязные сообщения, тестовые сообщения.\n"
         
+        # Load few-shot examples from database
+        few_shot_examples = self._load_few_shot_examples(category_names)
+        
         # Build border cases section
         border_cases_text = ""
         if border_cases_list:
@@ -142,10 +224,15 @@ class ClassificationAgent:
 
 **ВАЖНО**: Если видишь слова ПОЧИНИТЬ, СДЕЛАТЬ, СОЗДАТЬ, ОФОРМИТЬ, ЗАМЕНИТЬ, УСТАНОВИТЬ - это ВСЕГДА intent="task_creation"!
 
-Верни ТОЛЬКО JSON в формате:
-{{"category": "{valid_categories}", "priority": "urgent|high|medium|low", "intent": "task_creation|ask_question|report_issue|request_document", "reasoning": "краткое объяснение", "confidence": 0.85}}
+{few_shot_examples}
 
-ОБЯЗАТЕЛЬНО включи поле "intent" в ответ!"""
+Верни ТОЛЬКО JSON в формате:
+{{"category": "{valid_categories}", "priority": "urgent|high|medium|low", "intent": "task_creation|ask_question|report_issue|request_document", "reasoning": "краткое объяснение (до 5 слов)", "confidence": 0.85}}
+
+ВАЖНО: 
+- reasoning должен быть ОЧЕНЬ кратким (максимум 5-7 слов)
+- НЕ пиши длинные объяснения
+- ОБЯЗАТЕЛЬНО включи поле "intent" в ответ!"""
 
         return prompt
     
@@ -236,6 +323,9 @@ class ClassificationAgent:
                 confidence=data.get("confidence", 0.8)
             )
             
+            # Update usage statistics for examples and corrections (async, non-blocking)
+            self._update_usage_stats(message_trimmed, classification)
+            
             # Cache the result (limit cache size to 100 entries)
             if len(self._cache) > 100:
                 # Remove oldest entry
@@ -272,7 +362,7 @@ class ClassificationAgent:
                         message="Recovered category/priority from incomplete JSON"
                     )
                     
-                    return Classification(
+                    return TicketClassification(
                         category=category,
                         priority=priority,
                         reasoning="Partial extraction from incomplete response",
@@ -286,14 +376,59 @@ class ClassificationAgent:
             logger.error("classification_error", error=str(e), exc_info=True)
             return None
     
+    def _update_usage_stats(self, message: str, classification: TicketClassification):
+        """Update usage statistics for similar examples/corrections.
+        
+        This tracks which examples are being used most frequently.
+        """
+        try:
+            from datetime import datetime
+            
+            with Session(database_service.engine) as session:
+                # Find similar examples (exact match for simplicity)
+                examples = session.exec(
+                    select(ClassificationExample)
+                    .where(ClassificationExample.is_active == True)
+                    .where(ClassificationExample.category == classification.category)
+                ).all()
+                
+                for ex in examples:
+                    # Simple similarity check: if user message contains example text or vice versa
+                    if (ex.example_text.lower() in message.lower() or 
+                        message.lower() in ex.example_text.lower()):
+                        ex.times_used += 1
+                        ex.last_used_at = datetime.now()
+                        session.add(ex)
+                
+                # Find similar corrections
+                corrections = session.exec(
+                    select(ClassificationCorrection)
+                    .where(ClassificationCorrection.is_active == True)
+                    .where(ClassificationCorrection.correct_category == classification.category)
+                ).all()
+                
+                for corr in corrections:
+                    if (corr.user_message.lower() in message.lower() or 
+                        message.lower() in corr.user_message.lower()):
+                        corr.times_used += 1
+                        corr.last_used_at = datetime.now()
+                        session.add(corr)
+                
+                session.commit()
+                
+        except Exception as e:
+            # Non-critical, just log the error
+            logger.warning("failed_to_update_usage_stats", error=str(e))
+    
     def refresh_categories(self):
         """Refresh categories from database and regenerate system prompt.
         
         This should be called when categories are added/updated/deleted.
         """
-        logger.info("refreshing_categories_for_classification")
+        logger.info("refreshing_categories_and_corrections_for_classification")
         self._cache.clear()  # Clear cache when categories change
         self._load_categories()
+        logger.info("classifier_refresh_complete")
 
 
 # Global instance

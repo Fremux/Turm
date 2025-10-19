@@ -17,7 +17,7 @@ router = APIRouter()
 class ClassifyRequest(BaseModel):
     """Request model for classification."""
     
-    message: str = Field(..., description="The message to classify", min_length=1, max_length=2000)
+    message: str = Field(..., description="The message to classify", min_length=1, max_length=20000)
 
 
 class ClassifyResponse(BaseModel):
@@ -35,7 +35,7 @@ class IntentClassifyResponse(BaseModel):
 class RoleAssignRequest(BaseModel):
     """Request model for role assignment."""
     
-    message: str = Field(..., description="The message to analyze", min_length=1, max_length=2000)
+    message: str = Field(..., description="The message to analyze", min_length=1, max_length=20000)
     domain: str | None = Field(None, description="The department domain (HR/IT/Finance/Office)")
     intent: str | None = Field(None, description="The user intent type")
 

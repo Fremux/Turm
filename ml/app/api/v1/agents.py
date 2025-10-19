@@ -60,6 +60,7 @@ async def create_agent_config(
             model=agent_config.model,
             temperature=agent_config.temperature,
             max_tokens=agent_config.max_tokens,
+            enabled_tools=agent_config.enabled_tools,
             additional_config=agent_config.additional_config,
             is_active=agent_config.is_active,
             priority=agent_config.priority,
@@ -232,21 +233,11 @@ async def test_agent_config(
             'priority': test_request.priority
         }
         
-        # Check if agent should be triggered
-        triggered = agent_loader.should_trigger_agent(agent.name, context)
+        # For testing, we FORCE execution regardless of triggers
+        # This allows users to test agent functionality directly
+        logger.info("agent_test_forced_execution", agent_id=agent_id, agent_name=agent.name)
         
-        if not triggered:
-            return AgentTestResponse(
-                agent_id=agent_id,
-                agent_name=agent.name,
-                triggered=False,
-                response="Agent not triggered for this context",
-                confidence=None,
-                execution_time_ms=None,
-                error=None
-            )
-        
-        # Execute agent
+        # Execute agent (forced)
         start_time = time.time()
         
         try:
@@ -361,4 +352,47 @@ async def get_agent_logs(
     except Exception as e:
         logger.error("get_agent_logs_error", agent_id=agent_id, error=str(e), exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to get agent logs")
+
+
+@router.get("/tools")
+@limiter.limit(settings.RATE_LIMIT_ENDPOINTS["messages"][0])
+async def list_available_tools(request: Request):
+    """List all available tools from the tool registry.
+    
+    Returns:
+        List of tool metadata (id, name, category, description, etc.)
+    """
+    try:
+        from app.core.langgraph.tools import tool_registry
+        
+        tools = tool_registry.list_all()
+        
+        logger.info("tools_listed", count=len(tools))
+        return {"tools": tools, "total": len(tools)}
+        
+    except Exception as e:
+        logger.error("list_tools_error", error=str(e), exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to list tools")
+
+
+@router.get("/tools/categories")
+@limiter.limit(settings.RATE_LIMIT_ENDPOINTS["messages"][0])
+async def list_tool_categories(request: Request):
+    """List all tool categories.
+    
+    Returns:
+        List of unique tool categories
+    """
+    try:
+        from app.core.langgraph.tools import tool_registry
+        
+        tools = tool_registry.list_all()
+        categories = list(set(tool["category"] for tool in tools))
+        
+        logger.info("tool_categories_listed", count=len(categories))
+        return {"categories": categories, "total": len(categories)}
+        
+    except Exception as e:
+        logger.error("list_tool_categories_error", error=str(e), exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to list tool categories")
 

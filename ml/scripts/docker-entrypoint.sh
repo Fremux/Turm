@@ -79,6 +79,12 @@ echo "Database User: $( [[ -n ${POSTGRES_USER:-${DB_USER:-}} ]] && echo 'set' ||
 echo "LLM Model: ${LLM_MODEL:-Not set}"
 echo "Debug Mode: ${DEBUG:-false}"
 
+# Ensure logs directory exists and has correct permissions
+echo "Setting up logs directory..."
+mkdir -p /app/logs
+chmod 777 /app/logs
+echo "Logs directory configured with correct permissions"
+
 # Wait for database to be ready
 echo "Waiting for database to be ready..."
 max_attempts=30
@@ -130,6 +136,54 @@ if [ -f "/app/app/scripts/init_default_data.py" ]; then
     /app/.venv/bin/python /app/app/scripts/init_default_data.py || {
         echo "Warning: Default categories initialization failed, continuing anyway..."
     }
+fi
+
+# Create organization structure tables
+# Note: Tables are now created automatically by init_data.py
+echo "Organization tables will be created by init_data.py..."
+
+# Description field is included in the SQL migration
+
+# Initialize organization structure and capability mappings
+echo "Initializing organization structure and capability mappings..."
+if [ -f "/app/init_data.py" ]; then
+    /app/.venv/bin/python /app/init_data.py || {
+        echo "Warning: Organization and capability mappings initialization failed, continuing anyway..."
+    }
+else
+    # Fallback to old method if init_data.py doesn't exist
+    echo "Loading organization structure from users.json (legacy)..."
+    if [ -f "/app/users.json" ] && [ -f "/app/app/scripts/load_organization.py" ]; then
+        /app/.venv/bin/python /app/app/scripts/load_organization.py || {
+            echo "Warning: Organization data loading failed, continuing anyway..."
+        }
+    fi
+fi
+
+# Check if categories need detailed initialization (border_cases, key_markers, etc.)
+echo "Checking if categories need detailed initialization..."
+CATEGORY_COUNT=$(PGPASSWORD=$POSTGRES_PASSWORD psql -h postgres -U $POSTGRES_USER -d $POSTGRES_DB -t -c "SELECT COUNT(*) FROM categories WHERE border_cases IS NOT NULL AND border_cases != ''" 2>/dev/null || echo "0")
+CATEGORY_COUNT=$(echo $CATEGORY_COUNT | xargs)  # Trim whitespace
+
+if [ "$CATEGORY_COUNT" = "0" ] || [ -z "$CATEGORY_COUNT" ]; then
+    echo "Categories are empty or not fully configured. Running detailed initialization..."
+    if [ -f "/app/update_categories_api.sh" ]; then
+        # Wait for the app to fully start before making API calls
+        echo "Waiting 5 seconds for app to start..."
+        sleep 5
+        
+        # Run in background to not block startup
+        (
+            echo "Running update_categories_api.sh..."
+            cd /app && bash /app/update_categories_api.sh || {
+                echo "Warning: Category update script failed, continuing anyway..."
+            }
+        ) &
+    else
+        echo "Warning: update_categories_api.sh not found, skipping detailed initialization"
+    fi
+else
+    echo "Categories are already configured (found $CATEGORY_COUNT categories with border_cases)"
 fi
 
 echo "Starting application..."

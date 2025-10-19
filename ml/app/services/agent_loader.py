@@ -1,10 +1,11 @@
 """Dynamic agent loader for loading and managing agents from database."""
 
 import time
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from datetime import datetime
 
 from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.tools import BaseTool
 from langchain_openai import ChatOpenAI
 from sqlmodel import Session, select
 
@@ -12,6 +13,7 @@ from app.core.config import settings
 from app.core.logging import logger
 from app.models.agent_config import AgentConfiguration, AgentInvocationLog
 from app.services.database import database_service
+from app.core.langgraph.tools import tool_registry
 
 
 class DynamicAgentLoader:
@@ -94,6 +96,37 @@ class DynamicAgentLoader:
                 streaming=False
             )
         
+        # Load enabled tools from registry
+        enabled_tools: List[BaseTool] = []
+        if config.enabled_tools:
+            enabled_tools = tool_registry.get_tools(config.enabled_tools)
+            logger.debug(
+                "agent_tools_loaded",
+                agent_name=config.name,
+                tool_count=len(enabled_tools),
+                tool_ids=config.enabled_tools
+            )
+        
+        # For ReAct agents, create with tools
+        agent_instance = None
+        if config.agent_type == "react" and enabled_tools:
+            try:
+                from app.core.langgraph.react_agent import ReActAgent
+                agent_instance = ReActAgent(tools=enabled_tools)
+                logger.info(
+                    "react_agent_created_with_tools",
+                    agent_name=config.name,
+                    tool_count=len(enabled_tools)
+                )
+            except Exception as e:
+                logger.error(
+                    "react_agent_creation_failed",
+                    agent_name=config.name,
+                    error=str(e),
+                    exc_info=True
+                )
+                # Fall back to simple LLM
+        
         return {
             'id': config.id,
             'agent_type': config.agent_type,
@@ -104,6 +137,8 @@ class DynamicAgentLoader:
             'trigger_type': config.trigger_type,
             'trigger_value': config.trigger_value,
             'priority': config.priority,
+            'enabled_tools': enabled_tools,
+            'agent_instance': agent_instance,  # ReActAgent instance if applicable
             'additional_config': config.additional_config
         }
     
@@ -213,32 +248,73 @@ class DynamicAgentLoader:
         agent_id = agent['id']
         
         try:
-            # Prepare messages
-            messages = []
-            
-            if agent['system_prompt']:
-                messages.append(SystemMessage(content=agent['system_prompt']))
-            
-            # Add context to user message if needed
-            user_prompt = message
-            if context:
-                context_str = f"\nКонтекст: Категория={context.get('category')}, Намерение={context.get('intent')}, Приоритет={context.get('priority')}"
-                user_prompt = message + context_str
-            
-            messages.append(HumanMessage(content=user_prompt))
-            
-            # Invoke LLM
-            response = await agent['llm'].ainvoke(messages)
-            
-            execution_time = int((time.time() - start_time) * 1000)
-            
-            # Parse response
-            result = {
-                'response': response.content,
-                'confidence': 0.8,  # Default, can be extracted from response
-                'agent_name': agent_name,
-                'execution_time_ms': execution_time
-            }
+            # Check if this is a ReAct agent with tools
+            if agent.get('agent_instance'):
+                # Use ReActAgent for execution
+                react_agent = agent['agent_instance']
+                
+                # Create classification dict for ReActAgent
+                classification_dict = {
+                    'category': context.get('category'),
+                    'priority': context.get('priority'),
+                    'confidence': 0.9
+                }
+                
+                logger.info(
+                    "executing_react_agent_with_tools",
+                    agent_name=agent_name,
+                    tool_count=len(agent.get('enabled_tools', []))
+                )
+                
+                # Execute ReAct agent
+                result_dict = await react_agent.analyze_problem(
+                    user_message=message,
+                    classification=classification_dict,
+                    session_id=session_id or "no_session"
+                )
+                
+                execution_time = int((time.time() - start_time) * 1000)
+                
+                # Extract response from result
+                response_content = result_dict.get('solution', result_dict.get('response', ''))
+                confidence = result_dict.get('confidence', 0.8)
+                
+                result = {
+                    'response': response_content,
+                    'confidence': confidence,
+                    'agent_name': agent_name,
+                    'execution_time_ms': execution_time,
+                    'tools_used': result_dict.get('tools_used', []),
+                    'analysis': result_dict
+                }
+                
+            else:
+                # Use simple LLM execution
+                messages = []
+                
+                if agent['system_prompt']:
+                    messages.append(SystemMessage(content=agent['system_prompt']))
+                
+                # Add context to user message if needed
+                user_prompt = message
+                if context:
+                    context_str = f"\nКонтекст: Категория={context.get('category')}, Намерение={context.get('intent')}, Приоритет={context.get('priority')}"
+                    user_prompt = message + context_str
+                
+                messages.append(HumanMessage(content=user_prompt))
+                
+                # Invoke LLM
+                response = await agent['llm'].ainvoke(messages)
+                
+                execution_time = int((time.time() - start_time) * 1000)
+                
+                # Parse response
+                result = {
+                    'response': response.content,
+                    'confidence': 0.8,  # Default, can be extracted from response
+                    'agent_name': agent_name,
+                    'execution_time_ms': execution_time
+                }
             
             # Log invocation
             if session_id:
@@ -247,19 +323,21 @@ class DynamicAgentLoader:
                     session_id=session_id,
                     message=message,
                     context=context,
-                    response=response.content,
-                    execution_time_ms=execution_time,
+                    response=result['response'],
+                    execution_time_ms=result['execution_time_ms'],
                     status="success"
                 )
             
             # Update agent stats
-            self._update_agent_stats(agent_id, 0.8, execution_time)
+            self._update_agent_stats(agent_id, result['confidence'], result['execution_time_ms'])
             
             logger.info(
                 "agent_executed",
                 agent_name=agent_name,
-                execution_time_ms=execution_time,
-                response_length=len(response.content)
+                agent_type=agent['agent_type'],
+                execution_time_ms=result['execution_time_ms'],
+                response_length=len(result['response']),
+                has_tools=len(agent.get('enabled_tools', [])) > 0
             )
             
             return result

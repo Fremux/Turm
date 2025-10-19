@@ -310,7 +310,8 @@ class QdrantService:
         collection_name: Optional[str] = None,
         chunk_size: int = 512,
         chunk_overlap: int = 128,
-        chunker_type: ChunkerType = "token"
+        chunker_type: ChunkerType = "token",
+        embedding_model: Optional[str] = None
     ) -> Dict[str, Any]:
         """Upload a document to Qdrant using Chonkie.
         
@@ -322,33 +323,60 @@ class QdrantService:
             collection_name: Target collection (default: default collection)
             chunk_size: Size of chunks in tokens
             chunk_overlap: Overlap between chunks
+            embedding_model: Custom embedding model (e.g., 'qwen-0.6b', 'bge-m3')
             
         Returns:
             Dict with upload statistics
         """
         try:
+            from app.core.embedding_models import get_model_info, DEFAULT_MODEL_NAME, DEFAULT_DIMENSION
+            
             collection = collection_name or self.default_collection_name
+            
+            # Determine embedding model and dimension
+            if embedding_model:
+                model_name, model_dim = get_model_info(embedding_model)
+                logger.info(
+                    "using_custom_embedding_model",
+                    embedding_model=embedding_model,
+                    model_name=model_name,
+                    dimension=model_dim
+                )
+            else:
+                model_name = DEFAULT_MODEL_NAME
+                model_dim = DEFAULT_DIMENSION
             
             # Ensure collection exists
             collections = self.client.get_collections().collections
             if collection not in [col.name for col in collections]:
-                # Create with default settings
+                # Create with custom embedding dimension
                 self.create_collection(
                     collection_name=collection,
-                    embedding_size=self.default_embedding_dimension
+                    embedding_size=model_dim
+                )
+                logger.info(
+                    "collection_created_with_dimension",
+                    collection=collection,
+                    dimension=model_dim
                 )
             
-            # Get collection info
+            # Get collection info and validate
             col_info = self.client.get_collection(collection)
-            embedding_size = col_info.config.params.vectors.size if hasattr(col_info.config.params, 'vectors') else self.default_embedding_dimension
+            collection_dim = col_info.config.params.vectors.size if hasattr(col_info.config.params, 'vectors') else self.default_embedding_dimension
             
             # Validate embedding size matches
-            if embedding_size != self.default_embedding_dimension:
-                logger.warning(
-                    "embedding_size_mismatch",
-                    collection_size=embedding_size,
-                    expected_size=self.default_embedding_dimension,
-                    collection=collection
+            if collection_dim != model_dim:
+                logger.error(
+                    "embedding_dimension_mismatch",
+                    collection=collection,
+                    collection_dimension=collection_dim,
+                    model_dimension=model_dim,
+                    model=embedding_model or 'default'
+                )
+                raise ValueError(
+                    f"Embedding dimension mismatch: collection expects {collection_dim}, "
+                    f"but model '{embedding_model or 'default'}' produces {model_dim}. "
+                    f"Please recreate the collection with the correct dimension."
                 )
             
             # Initialize Chonkie chunker based on type
@@ -357,6 +385,18 @@ class QdrantService:
                 chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap
             )
+            
+            # Initialize embeddings with correct model
+            if embedding_model:
+                from app.services.deepinfra_embeddings import DeepInfraEmbeddings
+                embeddings = DeepInfraEmbeddings(model=model_name)
+                logger.info(
+                    "custom_embeddings_initialized",
+                    model=model_name,
+                    dimension=model_dim
+                )
+            else:
+                embeddings = self.embeddings
             
             logger.info(
                 "chunker_initialized",
@@ -421,7 +461,7 @@ class QdrantService:
                     # Ensure text is not too long for embedding API
                     # Most embedding models have ~512-8192 token limits
                     # We're already at 900 chars max, which is safe for most models
-                    embedding = self.embeddings.embed(chunk_text)
+                    embedding = embeddings.embed(chunk_text)
                     embedding_list = embedding.tolist() if hasattr(embedding, 'tolist') else list(embedding)
                 except Exception as e:
                     logger.error(
@@ -577,7 +617,8 @@ class QdrantService:
         collection_name: Optional[str] = None,
         chunk_size: int = 512,
         chunk_overlap: int = 128,
-        chunker_type: ChunkerType = "token"
+        chunker_type: ChunkerType = "token",
+        embedding_model: Optional[str] = None
     ) -> Dict[str, Any]:
         """Upload a CSV document to Qdrant.
         
@@ -589,6 +630,7 @@ class QdrantService:
             collection_name: Target collection
             chunk_size: Size of chunks
             chunk_overlap: Overlap between chunks
+            embedding_model: Custom embedding model (e.g., 'qwen-0.6b', 'bge-m3')
             
         Returns:
             Dict with upload statistics
@@ -658,7 +700,9 @@ class QdrantService:
         query: str,
         user_id: Optional[int] = None,
         limit: int = 5,
-        collection_name: Optional[str] = None
+        collection_name: Optional[str] = None,
+        embedding_model: Optional[str] = None,
+        embedding_dimension: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         """Search for relevant chunks using embeddings.
         
@@ -667,6 +711,8 @@ class QdrantService:
             user_id: Optional user ID to filter results
             limit: Maximum number of results
             collection_name: Collection to search in
+            embedding_model: Custom embedding model (if different from default)
+            embedding_dimension: Custom embedding dimension
             
         Returns:
             List of relevant chunks with scores
@@ -674,8 +720,23 @@ class QdrantService:
         try:
             collection = collection_name or self.default_collection_name
             
+            # Use custom embedder if model is specified and different from default
+            embedder = self.embeddings
+            if embedding_model and embedding_model != self.embeddings.model:
+                from app.services.deepinfra_embeddings import DeepInfraEmbeddings
+                embedder = DeepInfraEmbeddings(
+                    model=embedding_model,
+                    dimension=embedding_dimension
+                )
+                logger.info(
+                    "using_custom_embedder",
+                    model=embedding_model,
+                    dimension=embedding_dimension,
+                    collection=collection
+                )
+            
             # Generate embedding for query
-            query_embedding = self.embeddings.embed(query)
+            query_embedding = embedder.embed(query)
             query_vector = query_embedding.tolist() if hasattr(query_embedding, 'tolist') else list(query_embedding)
             
             # Build filter for user_id if provided

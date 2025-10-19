@@ -496,17 +496,11 @@
             <button class="tab" onclick="switchTab('intents')">
                 🎯 Намерения
             </button>
-            <button class="tab" onclick="switchTab('corrections')">
-                ✏️ Исправления
-            </button>
             <button class="tab" onclick="switchTab('agents')">
                 🤖 Агенты
             </button>
             <button class="tab" onclick="switchTab('tasks')">
                 ✅ Задачи
-            </button>
-            <button class="tab" onclick="switchTab('roles')">
-                🏢 Роли
             </button>
             <button class="tab" onclick="switchTab('settings')">
                 ⚙️ Настройки
@@ -544,45 +538,6 @@
                     <div class="loading">
                         <div class="spinner"></div>
                         <p>Загрузка намерений...</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Corrections Tab -->
-            <div id="corrections-tab" class="tab-content">
-                <div class="action-bar">
-                    <h2 style="font-size: 24px; color: #1a202c;">✏️ Исправления классификации</h2>
-                    <button class="btn" onclick="openCreateExampleModal()">
-                        ➕ Добавить пример
-                    </button>
-                </div>
-
-                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                    <button class="btn" onclick="showCorrectionsView()" id="corrections-view-btn"
-                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                        Исправления пользователей
-                    </button>
-                    <button class="btn" onclick="showExamplesView()" id="examples-view-btn"
-                        style="background: #e2e8f0; color: #64748b;">
-                        Эталонные примеры
-                    </button>
-                </div>
-
-                <div id="corrections-view">
-                    <div id="corrections-container">
-                        <div class="loading">
-                            <div class="spinner"></div>
-                            <p>Загрузка исправлений...</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="examples-view" style="display: none;">
-                    <div id="examples-container">
-                        <div class="loading">
-                            <div class="spinner"></div>
-                            <p>Загрузка примеров...</p>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -626,37 +581,6 @@
                     <div class="loading">
                         <div class="spinner"></div>
                         <p>Загрузка задач...</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Roles Tab -->
-            <div id="roles-tab" class="tab-content">
-                <div class="action-bar">
-                    <h2 style="font-size: 24px; color: #1a202c;">🏢 Организационная структура</h2>
-                    <button class="btn" onclick="openCreateRoleModal()">
-                        ➕ Создать роль
-                    </button>
-                </div>
-
-                <div style="margin-bottom: 20px; display: flex; gap: 10px;">
-                    <select id="roleTypeFilter" onchange="filterRoles()"
-                        style="padding: 10px; border: 1px solid #d1d5db; border-radius: 8px;">
-                        <option value="">Все типы</option>
-                        <option value="position">Должности</option>
-                        <option value="department">Отделы</option>
-                        <option value="office">Офисы</option>
-                        <option value="block">Блоки</option>
-                        <option value="corporation">Корпорация</option>
-                    </select>
-                    <input type="text" id="roleSearchInput" placeholder="🔍 Поиск по названию..."
-                        style="flex: 1; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px;"
-                        oninput="filterRoles()">
-                </div>
-
-                <div id="roles-container">
-                    <div style="text-align: center; padding: 40px; color: #9ca3af;">
-                        Загрузка ролей...
                     </div>
                 </div>
             </div>
@@ -804,7 +728,7 @@
                         placeholder="трудовые отношения и персонал — оформление/изменение условий, отпуска/командировки, справки для сотрудника..."
                         rows="3"></textarea>
                     <div class="form-help">Подробное описание того, что входит в эту категорию</div>
-                </div>
+                    </div>
 
                 <div class="form-group">
                     <label class="form-label">Частые интенты</label>
@@ -840,18 +764,16 @@
                 <div class="form-group">
                     <label class="form-label">Модель эмбеддинга</label>
                     <select class="form-input" id="categoryEmbeddingModel">
-                        <option value="qwen-0.6b">Qwen3-Embedding-0.6B (768)</option>
-                        <option value="qwen-4b">Qwen3-Embedding-4B (2048)</option>
-                        <option value="qwen-8b" selected>Qwen3-Embedding-8B (4096)</option>
-                        <option value="bge-m3">BGE-M3 Multi (1024)</option>
-                        <option value="gemma-300m">EmbeddingGemma-300M (256)</option>
+                        <option value="text-embedding-3-small">text-embedding-3-small (1536)</option>
+                        <option value="text-embedding-3-large">text-embedding-3-large (3072)</option>
+                        <option value="text-embedding-ada-002">text-embedding-ada-002 (1536)</option>
                     </select>
-                    <div class="form-help">Модель для векторных представлений (DeepInfra API)</div>
+                    <div class="form-help">Модель OpenAI для создания векторных представлений</div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Размерность векторов</label>
-                    <input type="number" class="form-input" id="categoryEmbeddingDimension" value="768" min="1"
+                    <input type="number" class="form-input" id="categoryEmbeddingDimension" value="1536" min="1"
                         max="8000" />
                     <div class="form-help">Размер вектора эмбеддинга (должен соответствовать модели)</div>
                 </div>
@@ -1004,8 +926,8 @@
 
                 <div class="form-group" id="triggerValueGroup">
                     <label class="form-label">Значение триггера *</label>
-                    <input type="text" class="form-input" id="agentTriggerValue"
-                        placeholder='{"categories": ["hr", "it"]}' />
+                    <input type="text" class="form-input" id="agentTriggerValue" 
+                           placeholder='{"categories": ["hr", "it"]}' />
                     <div class="form-help" id="triggerValueHelp">JSON формат: {"categories": ["hr"]}</div>
                 </div>
 
@@ -1075,122 +997,12 @@
         </div>
     </div>
 
-    <!-- Role Modal -->
-    <div id="roleModal" class="modal">
-        <div class="modal-content" style="max-width: 700px;">
-            <span class="close" onclick="closeRoleModal()">&times;</span>
-            <h2 id="roleModalTitle">Создать роль</h2>
-            <form id="roleForm">
-                <div class="form-group">
-                    <label for="roleExternalId">ID роли *</label>
-                    <input type="text" id="roleExternalId" required placeholder="company-sales-manager">
-                    <small>Уникальный идентификатор роли (только латиница, цифры, дефисы)</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="roleTitle">Название роли *</label>
-                    <input type="text" id="roleTitle" required placeholder="Менеджер по продажам">
-                </div>
-
-                <div class="form-group">
-                    <label for="rolePosition">Позиция (EN)</label>
-                    <input type="text" id="rolePosition" placeholder="Sales Manager">
-                </div>
-
-                <div class="form-group">
-                    <label for="roleType">Тип *</label>
-                    <select id="roleType" required>
-                        <option value="position">Должность</option>
-                        <option value="department">Отдел</option>
-                        <option value="office">Офис</option>
-                        <option value="block">Блок</option>
-                        <option value="corporation">Корпорация</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="roleParent">Родительская единица</label>
-                    <select id="roleParent">
-                        <option value="">Без родителя (корневая)</option>
-                    </select>
-                    <small>Выберите родительский отдел/блок для создания иерархии</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="roleDescription">Описание (чем занимается)</label>
-                    <textarea id="roleDescription" rows="3"
-                        placeholder="Например: Отвечает за поддержку пользователей, решение технических проблем, настройку оборудования..."></textarea>
-                </div>
-
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeRoleModal()">
-                        Отмена
-                    </button>
-                    <button type="submit" class="btn">
-                        Сохранить
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Capability Modal -->
-    <div id="capabilityModal" class="modal">
-        <div class="modal-content" style="max-width: 600px;">
-            <span class="close" onclick="closeCapabilityModal()">&times;</span>
-            <h2 id="capabilityModalTitle">Добавить возможность</h2>
-            <form id="capabilityForm">
-                <input type="hidden" id="capabilityUnitId">
-
-                <div class="form-group">
-                    <label for="capabilityCategory">Категория *</label>
-                    <select id="capabilityCategory" required>
-                        <option value="it">IT</option>
-                        <option value="hr">HR</option>
-                        <option value="office">Office</option>
-                        <option value="finance">Finance</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="capabilityAction">Тип действия *</label>
-                    <input type="text" id="capabilityAction" required
-                        placeholder="Например: создать/изменить доступ (AD/VPN)">
-                    <small>Опишите что именно может делать эта роль</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="capabilityKeywords">Ключевые слова</label>
-                    <input type="text" id="capabilityKeywords" placeholder="Например: vpn, ad, доступ, учетка">
-                    <small>Через запятую. Используются для автоматического назначения задач</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="capabilityPriority">Приоритет (1-10)</label>
-                    <input type="number" id="capabilityPriority" min="1" max="10" value="5">
-                    <small>Более высокий приоритет = более специфичная роль</small>
-                </div>
-
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeCapabilityModal()">
-                        Отмена
-                    </button>
-                    <button type="submit" class="btn">
-                        Добавить
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <script>
         const API_BASE = '/api/v1/admin';
         let currentCategories = [];
         let currentIntents = [];
         let currentAgents = [];
         let currentTasks = [];
-        let currentRoles = [];  // Organization units
-        let currentCapabilities = [];  // Capabilities
         let availableTools = [];  // Available tools from registry
         let editingCategoryId = null;  // Track category being edited
         let editingIntentId = null;  // Track intent being edited
@@ -1220,10 +1032,6 @@
         // Track which tabs have been loaded
         const loadedTabs = new Set(['categories', 'intents']); // Categories and intents are loaded on startup
 
-        // State for corrections tab
-        let currentCorrections = [];
-        let currentExamples = [];
-
         // Tab switching with lazy loading
         window.switchTab = function (tabName) {
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
@@ -1243,18 +1051,12 @@
                 loadedTabs.add(tabName);
 
                 switch (tabName) {
-                    case 'corrections':
-                        loadCorrections();
-                        break;
                     case 'agents':
                         loadAgents();
                         loadTools(); // Tools needed for agent modal
                         break;
                     case 'tasks':
                         loadTasks();
-                        break;
-                    case 'roles':
-                        loadRoles();
                         break;
                     case 'settings':
                         loadSmtpSettings();
@@ -1352,21 +1154,20 @@
                     `<div class="category-badge badge-created">✓ Коллекция создана (${cat.embedding_model} - ${cat.embedding_dimension}d)</div>` :
                     '<div class="category-badge badge-inactive">⚠️ Коллекция не создана</div>'}
                             
-                            <div class="category-actions" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                                <button class="btn btn-small" onclick="editCategory(${cat.id})" style="flex: 1; min-width: 140px;">
+                            <div class="category-actions">
+                                <button class="btn btn-small" onclick="editCategory(${cat.id})">
                                     ✏️ Редактировать
                                 </button>
-                                <button class="btn btn-small ${cat.collection_created ? 'btn-secondary' : ''}" 
-                                        onclick="createCollectionForCategory(${cat.id})" style="flex: 1; min-width: 140px;">
-                                    ${cat.collection_created ? '🔄 Пересоздать' : '🔧 Создать'}
+                                ${!cat.collection_created ? `
+                                <button class="btn btn-small" onclick="createCollectionForCategory(${cat.id})">
+                                    🔧 Создать коллекцию
                                 </button>
-                                ${cat.collection_created ? `
+                                ` : `
                                 <button class="btn btn-small btn-secondary" 
-                                        onclick="uploadToCategory('${cat.collection_name}')"
-                                        style="flex: 1; min-width: 140px; white-space: nowrap;">
-                                    📤 Загрузить
+                                        onclick="uploadToCategory('${cat.collection_name}')">
+                                    📤 Загрузить документы
                                 </button>
-                                ` : ''}
+                                `}
                             </div>
                         </div>
                     `).join('')}
@@ -1464,7 +1265,7 @@
         }
 
         // Modal functions
-        window.openCreateCategoryModal = function () {
+        function openCreateCategoryModal() {
             editingCategoryId = null;  // Reset editing mode
             document.getElementById('categoryModalTitle').textContent = 'Создать категорию';
             document.getElementById('categoryForm').reset();
@@ -1473,14 +1274,14 @@
             document.getElementById('categoryModal').classList.add('active');
         }
 
-        window.closeCategoryModal = function () {
+        function closeCategoryModal() {
             document.getElementById('categoryModal').classList.remove('active');
             editingCategoryId = null;  // Reset editing mode
             document.getElementById('categoryName').disabled = false;  // Re-enable name field
             document.getElementById('createCollection').disabled = false;  // Re-enable collection checkbox
         }
 
-        window.openCreateIntentModal = function () {
+        function openCreateIntentModal() {
             editingIntentId = null;  // Reset editing mode
             document.getElementById('intentModalTitle').textContent = 'Создать намерение';
             document.getElementById('intentForm').reset();
@@ -1488,7 +1289,7 @@
             document.getElementById('intentModal').classList.add('active');
         }
 
-        window.closeIntentModal = function () {
+        function closeIntentModal() {
             document.getElementById('intentModal').classList.remove('active');
             editingIntentId = null;  // Reset editing mode
             document.getElementById('intentName').disabled = false;  // Re-enable name field
@@ -1509,13 +1310,11 @@
 
             embeddingModel.addEventListener('change', (e) => {
                 const dimensionMap = {
-                    'qwen-0.6b': 768,
-                    'qwen-4b': 2048,
-                    'qwen-8b': 4096,
-                    'bge-m3': 1024,
-                    'gemma-300m': 256
+                    'text-embedding-3-small': 1536,
+                    'text-embedding-3-large': 3072,
+                    'text-embedding-ada-002': 1536
                 };
-                embeddingDimension.value = dimensionMap[e.target.value] || 4096;
+                embeddingDimension.value = dimensionMap[e.target.value] || 1536;
             });
         }
 
@@ -1551,9 +1350,9 @@
                 } else {
                     // CREATE mode - send all fields including name
                     data = {
-                        name: document.getElementById('categoryName').value,
-                        display_name: document.getElementById('categoryDisplayName').value,
-                        description: document.getElementById('categoryDescription').value,
+                    name: document.getElementById('categoryName').value,
+                    display_name: document.getElementById('categoryDisplayName').value,
+                    description: document.getElementById('categoryDescription').value,
                         about_text: document.getElementById('categoryAboutText').value || null,
                         common_intents: document.getElementById('categoryCommonIntents').value || null,
                         key_markers: document.getElementById('categoryKeyMarkers').value || null,
@@ -1561,10 +1360,10 @@
                         border_cases: document.getElementById('categoryBorderCases').value || null,
                         embedding_model: document.getElementById('categoryEmbeddingModel').value,
                         embedding_dimension: parseInt(document.getElementById('categoryEmbeddingDimension').value),
-                        color: document.getElementById('categoryColor').value,
-                        icon: document.getElementById('categoryIcon').value || null,
-                        create_collection: document.getElementById('createCollection').checked
-                    };
+                    color: document.getElementById('categoryColor').value,
+                    icon: document.getElementById('categoryIcon').value || null,
+                    create_collection: document.getElementById('createCollection').checked
+                };
                     url = `${API_BASE}/categories`;
                     method = 'POST';
                     successMessage = 'Категория успешно создана!';
@@ -1622,13 +1421,13 @@
                 } else {
                     // CREATE mode - send all fields including name
                     data = {
-                        name: document.getElementById('intentName').value,
-                        display_name: document.getElementById('intentDisplayName').value,
-                        description: document.getElementById('intentDescription').value,
-                        category_id: categoryId ? parseInt(categoryId) : null,
-                        examples: examples,
-                        priority: document.getElementById('intentPriority').value
-                    };
+                    name: document.getElementById('intentName').value,
+                    display_name: document.getElementById('intentDisplayName').value,
+                    description: document.getElementById('intentDescription').value,
+                    category_id: categoryId ? parseInt(categoryId) : null,
+                    examples: examples,
+                    priority: document.getElementById('intentPriority').value
+                };
                     url = `${API_BASE}/intents`;
                     method = 'POST';
                     successMessage = 'Намерение успешно создано!';
@@ -1674,162 +1473,17 @@
         }
 
         // Helper functions
-        window.uploadToCategory = function (collectionName) {
-            // Open upload modal
-            openUploadModal(collectionName);
+        function uploadToCategory(collectionName) {
+            alert(`Перейдите в раздел "Документы" и выберите коллекцию: ${collectionName}`);
+            // Или можно перенаправить на index.html с параметром
+            // window.location.href = `index.html?collection=${collectionName}`;
         }
 
-        function openUploadModal(collectionName) {
-            const modal = document.createElement('div');
-            modal.className = 'modal active';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
-                    <h2>📤 Загрузить документы</h2>
-                    <p style="margin-bottom: 20px;">Коллекция: <strong>${collectionName}</strong></p>
-                    
-                    <div style="margin: 20px 0;">
-                        <label for="documentFile" style="display: block; margin-bottom: 8px; font-weight: 500; color: #1a202c;">
-                            Выберите файлы:
-                        </label>
-                        <input type="file" id="documentFile" multiple accept=".txt,.pdf,.doc,.docx,.md" 
-                               style="padding: 10px; border: 2px dashed #cbd5e0; border-radius: 8px; width: 100%; cursor: pointer;">
-                        <div style="font-size: 0.9em; color: #64748b; margin-top: 8px;">
-                            📎 Поддерживаются: TXT, PDF, DOC, DOCX, MD (можно выбрать несколько файлов)
-                        </div>
-                    </div>
-                    
-                    <div style="margin: 20px 0;">
-                        <label for="chunkerType" style="display: block; margin-bottom: 8px; font-weight: 500; color: #1a202c;">
-                            Способ чанкирования:
-                        </label>
-                        <select id="chunkerType" style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px;">
-                            <option value="token">Token (по токенам)</option>
-                            <option value="sentence">Sentence (по предложениям)</option>
-                            <option value="recursive">Recursive (рекурсивный)</option>
-                            <option value="semantic">Semantic (семантический)</option>
-                            <option value="slumber">Slumber (интеллектуальный)</option>
-                        </select>
-                        <div style="font-size: 0.9em; color: #64748b; margin-top: 8px;">
-                            💡 Token - универсальный, Semantic/Slumber - для связного текста
-                        </div>
-                    </div>
-                    
-                    <div style="margin: 20px 0;">
-                        <label for="chunkSize" style="display: block; margin-bottom: 8px; font-weight: 500; color: #1a202c;">
-                            Размер чанка (символов):
-                        </label>
-                        <input type="number" id="chunkSize" value="512" min="100" max="2048" 
-                               style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px;">
-                        <div style="font-size: 0.9em; color: #64748b; margin-top: 8px;">
-                            💡 Рекомендуется: 512 для Token/Recursive, 200-300 для Semantic/Slumber
-                        </div>
-                    </div>
-                    
-                    <div id="uploadProgress" style="display: none; margin: 20px 0;">
-                        <div style="background: #e2e8f0; border-radius: 8px; height: 24px; overflow: hidden;">
-                            <div id="progressBar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                                 height: 100%; width: 0%; transition: width 0.3s; display: flex; align-items: center; 
-                                 justify-content: center; color: white; font-size: 12px; font-weight: bold;">
-                            </div>
-                        </div>
-                        <div id="uploadStatus" style="margin-top: 8px; font-size: 0.9em; color: #64748b;"></div>
-                    </div>
-                    
-                    <div style="display: flex; gap: 10px; margin-top: 30px;">
-                        <button onclick="this.closest('.modal').remove()" 
-                                style="flex: 1; padding: 12px; background: #e2e8f0; border: none; 
-                                       border-radius: 8px; cursor: pointer; font-weight: 500;">
-                            Отмена
-                        </button>
-                        <button onclick="uploadDocuments('${collectionName}')" 
-                                style="flex: 1; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                                       color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
-                            Загрузить
-                        </button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-        }
-
-        async function uploadDocuments(collectionName) {
-            const fileInput = document.getElementById('documentFile');
-            const chunkSize = document.getElementById('chunkSize').value;
-            const chunkerType = document.getElementById('chunkerType').value;
-            const files = fileInput.files;
-
-            if (files.length === 0) {
-                alert('Выберите файлы для загрузки');
-                return;
-            }
-
-            const progressDiv = document.getElementById('uploadProgress');
-            const progressBar = document.getElementById('progressBar');
-            const statusDiv = document.getElementById('uploadStatus');
-
-            progressDiv.style.display = 'block';
-
-            let uploaded = 0;
-            const total = files.length;
-
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                statusDiv.textContent = `Загрузка ${i + 1} из ${total}: ${file.name}...`;
-
-                const formData = new FormData();
-                formData.append('file', file);
-
-                try {
-                    const response = await fetch(
-                        `/api/v1/documents/upload?collection_name=${collectionName}&chunk_size=${chunkSize}&chunker_type=${chunkerType}`,
-                        {
-                            method: 'POST',
-                            body: formData
-                        }
-                    );
-
-                    if (!response.ok) {
-                        const error = await response.json();
-                        throw new Error(error.detail || 'Ошибка загрузки');
-                    }
-
-                    uploaded++;
-                    const progress = Math.round((uploaded / total) * 100);
-                    progressBar.style.width = progress + '%';
-                    progressBar.textContent = progress + '%';
-
-                } catch (error) {
-                    console.error('Upload error:', error);
-                    statusDiv.textContent = `Ошибка при загрузке ${file.name}: ${error.message}`;
-                    statusDiv.style.color = '#ef4444';
-                    return;
-                }
-            }
-
-            statusDiv.textContent = `✅ Успешно загружено ${uploaded} из ${total} файлов`;
-            statusDiv.style.color = '#10b981';
-
-            setTimeout(() => {
-                document.querySelector('.modal').remove();
-                loadCategories(); // Reload to show updated doc count
-            }, 2000);
-        }
-
-        window.uploadDocuments = uploadDocuments;
-
-        window.createCollectionForCategory = async function (categoryId) {
-            const category = currentCategories.find(c => c.id === categoryId);
-            const message = category?.collection_created
-                ? 'Коллекция уже существует. Пересоздать с новыми настройками? ⚠️ Все документы будут удалены!'
-                : 'Создать векторную коллекцию для этой категории?';
-
-            if (!confirm(message)) return;
+        async function createCollectionForCategory(categoryId) {
+            if (!confirm('Создать векторную коллекцию для этой категории?')) return;
 
             try {
-                // Add force_recreate param if collection exists
-                const forceRecreate = category?.collection_created ? 'true' : 'false';
-                const response = await fetch(`${API_BASE}/categories/${categoryId}/create-collection?force_recreate=${forceRecreate}`, {
+                const response = await fetch(`${API_BASE}/categories/${categoryId}/create-collection`, {
                     method: 'POST'
                 });
 
@@ -1840,15 +1494,13 @@
 
                 const result = await response.json();
                 showSuccess(`Коллекция "${result.collection_name}" успешно создана! (размерность: ${result.embedding_size})`);
-
-                // Reload categories to show updated status
-                await loadCategories();
+                loadCategories();
             } catch (error) {
                 showError(error.message);
             }
         }
 
-        window.editCategory = async function (id) {
+        async function editCategory(id) {
             // Find category in current list
             const category = currentCategories.find(cat => cat.id === id);
 
@@ -1877,8 +1529,8 @@
             document.getElementById('categoryBorderCases').value = category.border_cases || '';
 
             // Fill embedding settings
-            document.getElementById('categoryEmbeddingModel').value = category.embedding_model || 'qwen-8b';
-            document.getElementById('categoryEmbeddingDimension').value = category.embedding_dimension || 4096;
+            document.getElementById('categoryEmbeddingModel').value = category.embedding_model || 'text-embedding-3-small';
+            document.getElementById('categoryEmbeddingDimension').value = category.embedding_dimension || 1536;
 
             // Fill UI fields
             document.getElementById('categoryColor').value = category.color || '#667eea';
@@ -1892,7 +1544,7 @@
             document.getElementById('categoryModal').classList.add('active');
         }
 
-        window.editIntent = async function (id) {
+        async function editIntent(id) {
             // Find intent in current list
             const intent = currentIntents.find(i => i.id === id);
 
@@ -1926,7 +1578,7 @@
             document.getElementById('intentModal').classList.add('active');
         }
 
-        window.deleteIntent = async function (id) {
+        async function deleteIntent(id) {
             if (!confirm('Вы уверены, что хотите удалить это намерение?')) return;
 
             try {
@@ -2115,7 +1767,7 @@
 
         function renderAgents(agents) {
             const container = document.getElementById('agents-container');
-
+            
             if (agents.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
@@ -2138,9 +1790,9 @@
                                 </div>
                                 <div style="display: flex; gap: 10px;">
                                     <span class="category-badge badge-created">${getAgentTypeIcon(agent.agent_type)} ${agent.agent_type.toUpperCase()}</span>
-                                    ${agent.is_active ?
-                    '<span class="category-badge badge-active">✓ Активен</span>' :
-                    '<span class="category-badge badge-inactive">✗ Неактивен</span>'}
+                                    ${agent.is_active ? 
+                                        '<span class="category-badge badge-active">✓ Активен</span>' : 
+                                        '<span class="category-badge badge-inactive">✗ Неактивен</span>'}
                                 </div>
                             </div>
                             
@@ -2218,19 +1870,19 @@
         function formatTriggerValue(value) {
             try {
                 if (!value || Object.keys(value).length === 0) return 'не указано';
-
+                
                 if (value.categories) return value.categories.join(', ');
                 if (value.intents) return value.intents.join(', ');
                 if (value.keywords) return value.keywords.slice(0, 3).join(', ') + (value.keywords.length > 3 ? '...' : '');
                 if (value.priorities) return value.priorities.join(', ');
-
+                
                 return JSON.stringify(value).substring(0, 50);
             } catch {
                 return 'ошибка';
             }
         }
 
-        window.openCreateAgentModal = async function () {
+        async function openCreateAgentModal() {
             editingAgentId = null;  // Reset editing mode
             document.getElementById('agentModalTitle').textContent = 'Создать агента';
             document.getElementById('agentForm').reset();
@@ -2247,7 +1899,7 @@
             document.getElementById('agentModal').classList.add('active');
         }
 
-        window.closeAgentModal = function () {
+        function closeAgentModal() {
             document.getElementById('agentModal').classList.remove('active');
             editingAgentId = null;  // Reset editing mode
             document.getElementById('agentName').disabled = false;  // Re-enable name field
@@ -2258,32 +1910,32 @@
             const valueInput = document.getElementById('agentTriggerValue');
             const helpText = document.getElementById('triggerValueHelp');
             const valueGroup = document.getElementById('triggerValueGroup');
-
+            
             if (triggerType === 'always') {
                 valueGroup.style.display = 'none';
                 return;
             }
-
+            
             valueGroup.style.display = 'block';
-
+            
             const examples = {
                 'category': '{"categories": ["hr", "it"]}',
                 'intent': '{"intents": ["access_request", "information_request"]}',
                 'keyword': '{"keywords": ["срочно", "критично"], "mode": "any"}',
                 'priority': '{"priorities": ["urgent", "high"]}'
             };
-
+            
             valueInput.placeholder = examples[triggerType] || '{}';
             helpText.textContent = `JSON формат: ${examples[triggerType] || '{}'}`;
         }
 
-        window.testAgent = async function (agentId) {
+        window.testAgent = async function(agentId) {
             const message = prompt('Введите тестовое сообщение для агента:', 'Привет! Помоги мне отправить письмо на test@example.com');
             if (!message) return;
-
+            
             try {
                 showSuccess('🔄 Тестируем агента...');
-
+                
                 const response = await fetch(`${API_BASE}/agents/${agentId}/test`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -2303,18 +1955,18 @@
                 const result = await response.json();
 
                 let alertMessage = `🤖 Агент: ${result.agent_name}\n\n`;
-
+                
                 if (result.triggered) {
                     alertMessage += `✅ Статус: Агент выполнен успешно\n\n`;
-
+                    
                     if (result.response) {
                         alertMessage += `💬 Ответ:\n${result.response}\n\n`;
                     }
-
+                    
                     if (result.execution_time_ms) {
                         alertMessage += `⏱️ Время выполнения: ${result.execution_time_ms}ms\n\n`;
                     }
-
+                    
                     if (result.error) {
                         alertMessage += `⚠️ Ошибка:\n${result.error}`;
                     }
@@ -2322,7 +1974,7 @@
                     alertMessage += `❌ Агент не сработал\n\n`;
                     alertMessage += `Причина: ${result.response || 'Не соответствует триггерам'}`;
                 }
-
+                
                 alert(alertMessage);
                 showSuccess('✅ Тест завершён');
             } catch (error) {
@@ -2331,11 +1983,11 @@
             }
         }
 
-        window.viewAgentStats = async function (agentId) {
+        window.viewAgentStats = async function(agentId) {
             try {
                 const response = await fetch(`${API_BASE}/agents/${agentId}/stats`);
                 const stats = await response.json();
-
+                
                 alert(`📊 Статистика агента "${stats.agent_name}"\n\n` +
                     `Всего вызовов: ${stats.total_invocations}\n` +
                     `Успешных: ${stats.success_count}\n` +
@@ -2413,7 +2065,7 @@
             document.getElementById('agentModal').classList.add('active');
         }
 
-        window.deleteAgent = async function (agentId) {
+        window.deleteAgent = async function(agentId) {
             if (!confirm('Вы уверены, что хотите удалить этого агента?')) return;
 
             try {
@@ -2434,7 +2086,7 @@
         const originalSetupForms = setupForms;
         setupForms = function () {
             originalSetupForms();
-
+            
             document.getElementById('agentForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
 
@@ -2479,22 +2131,22 @@
                 } else {
                     // CREATE mode - send all fields including name
                     data = {
-                        agent_type: document.getElementById('agentType').value,
-                        name: document.getElementById('agentName').value,
-                        display_name: document.getElementById('agentDisplayName').value,
-                        description: document.getElementById('agentDescription').value,
-                        trigger_type: document.getElementById('agentTriggerType').value,
-                        trigger_value: triggerValue,
-                        system_prompt: document.getElementById('agentSystemPrompt').value,
-                        model: document.getElementById('agentModel').value,
-                        temperature: parseFloat(document.getElementById('agentTemperature').value),
-                        max_tokens: parseInt(document.getElementById('agentMaxTokens').value),
+                    agent_type: document.getElementById('agentType').value,
+                    name: document.getElementById('agentName').value,
+                    display_name: document.getElementById('agentDisplayName').value,
+                    description: document.getElementById('agentDescription').value,
+                    trigger_type: document.getElementById('agentTriggerType').value,
+                    trigger_value: triggerValue,
+                    system_prompt: document.getElementById('agentSystemPrompt').value,
+                    model: document.getElementById('agentModel').value,
+                    temperature: parseFloat(document.getElementById('agentTemperature').value),
+                    max_tokens: parseInt(document.getElementById('agentMaxTokens').value),
                         enabled_tools: enabledTools,
-                        additional_config: {},
-                        is_active: document.getElementById('agentIsActive').checked,
-                        priority: parseInt(document.getElementById('agentPriority').value),
-                        tags: []
-                    };
+                    additional_config: {},
+                    is_active: document.getElementById('agentIsActive').checked,
+                    priority: parseInt(document.getElementById('agentPriority').value),
+                    tags: []
+                };
                     url = `${API_BASE}/agents`;
                     method = 'POST';
                     successMessage = 'Агент успешно создан!';
@@ -2664,11 +2316,6 @@
                                 <div class="stat">
                                     👤 Исполнитель: <span class="stat-value">${task.assignee}</span>
                                 </div>
-                                ${task.assigned_role_title ? `
-                                <div class="stat">
-                                    🎯 Роль: <span class="stat-value" style="color: #059669; font-weight: 500;">${task.assigned_role_title}${task.assigned_role_position ? ` (${task.assigned_role_position})` : ''}</span>
-                                </div>
-                                ` : ''}
                                 ${task.original_message ? `
                                 <div class="stat">
                                     💬 Запрос: <span class="stat-value">${task.original_message.substring(0, 100)}${task.original_message.length > 100 ? '...' : ''}</span>
@@ -2714,7 +2361,7 @@
             `;
         }
 
-        window.updateTaskStatus = async function (taskId, newStatus) {
+        async function updateTaskStatus(taskId, newStatus) {
             try {
                 const updateData = {
                     status: newStatus
@@ -2743,7 +2390,7 @@
             }
         }
 
-        window.viewTaskDetails = function (taskId) {
+        function viewTaskDetails(taskId) {
             const task = currentTasks.find(t => t.id === taskId);
             if (!task) return;
 
@@ -2829,7 +2476,7 @@
             statusDiv.style.display = 'block';
         }
 
-        window.testSmtpConnection = async function () {
+        async function testSmtpConnection() {
             try {
                 showSmtpStatus('warning', '🔄 Тестируем подключение...');
 
@@ -2851,597 +2498,7 @@
                 showSmtpStatus('error', `❌ Ошибка: ${error.message}`);
                 showError(error.message);
             }
-        }
-
-        // ============================================================
-        // ROLES AND CAPABILITIES MANAGEMENT
-        // ============================================================
-
-        let editingRoleId = null;
-
-        // Load roles
-        async function loadRoles() {
-            try {
-                const response = await fetch(`${API_BASE}/organization/units`);
-                if (!response.ok) throw new Error('Failed to load roles');
-
-                const roles = await response.json();
-                currentRoles = roles;
-                await renderRoles();
-                await loadParentOptions();  // For role modal dropdown
-            } catch (error) {
-                console.error('Error loading roles:', error);
-                showError(`Ошибка загрузки ролей: ${error.message}`);
-            }
-        }
-
-        // Render roles with hierarchy
-        function renderRoles() {
-            const container = document.getElementById('roles-container');
-
-            if (!currentRoles || currentRoles.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🏢</div>
-                        <h3>Нет ролей</h3>
-                        <p>Создайте организационную структуру для автоматического назначения задач</p>
-                    </div>
-                `;
-                return;
-            }
-
-            // Filter roles based on search and type
-            let filteredRoles = [...currentRoles];
-            const search = document.getElementById('roleSearchInput')?.value.toLowerCase() || '';
-            const typeFilter = document.getElementById('roleTypeFilter')?.value || '';
-
-            if (search) {
-                filteredRoles = filteredRoles.filter(role =>
-                    role.title.toLowerCase().includes(search) ||
-                    (role.position && role.position.toLowerCase().includes(search)) ||
-                    (role.external_id && role.external_id.toLowerCase().includes(search))
-                );
-            }
-
-            if (typeFilter) {
-                filteredRoles = filteredRoles.filter(role => role.unit_type === typeFilter);
-            }
-
-            // Group by level for hierarchical display
-            const rolesByLevel = {};
-            filteredRoles.forEach(role => {
-                if (!rolesByLevel[role.level]) rolesByLevel[role.level] = [];
-                rolesByLevel[role.level].push(role);
-            });
-
-            container.innerHTML = `
-                <div class="intents-list">
-                    ${filteredRoles.map(role => `
-                        <div class="intent-card" style="margin-left: ${role.level * 20}px;">
-                            <div class="category-header">
-                                <div>
-                                    <div class="category-title">
-                                        ${getUnitTypeIcon(role.unit_type)} ${role.title}
-                                    </div>
-                                    <div class="category-name">
-                                        ${role.position ? `${role.position} • ` : ''}
-                                        ${role.external_id}
-                                    </div>
-                                </div>
-                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                    <span class="category-badge" style="background: ${getUnitTypeColor(role.unit_type)}">
-                                        ${role.unit_type}
-                                    </span>
-                                    ${role.capabilities_count > 0 ? `
-                                        <span class="category-badge badge-created">
-                                            ⚡ ${role.capabilities_count} возможностей
-                                        </span>
-                                    ` : ''}
-                                    ${role.is_active ? '' : '<span class="category-badge badge-inactive">Неактивна</span>'}
-                                </div>
-                            </div>
-                            
-                            ${role.description ? `
-                                <div class="category-description">
-                                    <strong>Описание:</strong> ${role.description}
-                                </div>
-                            ` : ''}
-
-                            <div class="category-actions">
-                                <button class="btn btn-small" onclick="editRole(${role.id})">
-                                    ✏️ Редактировать
-                                </button>
-                                <button class="btn btn-small" onclick="manageCapabilities(${role.id})">
-                                    ⚡ Возможности
-                                </button>
-                                <button class="btn btn-small btn-danger" onclick="deleteRole(${role.id})">
-                                    🗑️ Удалить
-                                </button>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        function getUnitTypeIcon(type) {
-            const icons = {
-                'corporation': '🏛️',
-                'block': '🏢',
-                'department': '📁',
-                'office': '🏤',
-                'position': '👤'
-            };
-            return icons[type] || '📋';
-        }
-
-        function getUnitTypeColor(type) {
-            const colors = {
-                'corporation': '#fef3c7',
-                'block': '#dbeafe',
-                'department': '#e0e7ff',
-                'office': '#fce7f3',
-                'position': '#d1fae5'
-            };
-            return colors[type] || '#f3f4f6';
-        }
-
-        // Load parent options for dropdown
-        async function loadParentOptions() {
-            const select = document.getElementById('roleParent');
-            if (!select) return;
-
-            select.innerHTML = '<option value="">Без родителя (корневая)</option>';
-
-            if (!currentRoles || currentRoles.length === 0) {
-                console.warn('No roles loaded for parent options');
-                return;
-            }
-
-            // Only show non-position units as possible parents
-            const possibleParents = currentRoles.filter(r =>
-                r && r.unit_type !== 'position' && r.is_active && r.title
-            );
-
-            possibleParents.sort((a, b) => {
-                // Sort by path for hierarchical order
-                const pathA = a.path || '';
-                const pathB = b.path || '';
-                return pathA.localeCompare(pathB);
-            });
-
-            possibleParents.forEach(role => {
-                try {
-                    const option = document.createElement('option');
-                    option.value = role.id;
-
-                    // Use only title and type, no description
-                    const indent = '  '.repeat(role.level || 0);
-                    const roleType = role.unit_type || 'unknown';
-                    const roleTitle = role.title || 'Unnamed';
-
-                    option.textContent = `${indent}${roleTitle} (${roleType})`;
-                    select.appendChild(option);
-                } catch (e) {
-                    console.error('Error adding parent option:', e, role);
-                }
-            });
-
-            console.log(`Loaded ${possibleParents.length} parent options`);
-        }
-
-        // Filter roles
-        function filterRoles() {
-            renderRoles();
-        }
-        window.filterRoles = filterRoles;
-
-        // Open create role modal
-        async function openCreateRoleModal() {
-            editingRoleId = null;
-            document.getElementById('roleModalTitle').textContent = 'Создать роль';
-            document.getElementById('roleForm').reset();
-            document.getElementById('roleExternalId').disabled = false;
-
-            // Ensure roles are loaded
-            if (currentRoles.length === 0) {
-                await loadRoles();
-            }
-
-            await loadParentOptions();
-            document.getElementById('roleModal').style.display = 'block';
-        }
-        window.openCreateRoleModal = openCreateRoleModal;
-
-        // Close role modal
-        function closeRoleModal() {
-            document.getElementById('roleModal').style.display = 'none';
-            editingRoleId = null;
-        }
-        window.closeRoleModal = closeRoleModal;
-
-        // Edit role
-        async function editRole(roleId) {
-            try {
-                const response = await fetch(`${API_BASE}/organization/units/${roleId}`);
-                if (!response.ok) throw new Error('Failed to load role');
-
-                const role = await response.json();
-
-                editingRoleId = roleId;
-                document.getElementById('roleModalTitle').textContent = 'Редактировать роль';
-                document.getElementById('roleExternalId').value = role.external_id;
-                document.getElementById('roleExternalId').disabled = true;
-                document.getElementById('roleTitle').value = role.title;
-                document.getElementById('rolePosition').value = role.position || '';
-                document.getElementById('roleType').value = role.unit_type;
-                document.getElementById('roleDescription').value = role.description || '';
-
-                await loadParentOptions();
-                if (role.parent_id) {
-                    document.getElementById('roleParent').value = role.parent_id;
-                }
-
-                document.getElementById('roleModal').style.display = 'block';
-            } catch (error) {
-                console.error('Error loading role:', error);
-                showError(`Ошибка загрузки роли: ${error.message}`);
-            }
-        }
-        window.editRole = editRole;
-
-        // Handle role form submission
-        document.getElementById('roleForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const data = {
-                external_id: document.getElementById('roleExternalId').value,
-                title: document.getElementById('roleTitle').value,
-                position: document.getElementById('rolePosition').value || null,
-                unit_type: document.getElementById('roleType').value,
-                parent_id: parseInt(document.getElementById('roleParent').value) || null,
-                description: document.getElementById('roleDescription').value || null
-            };
-
-            try {
-                let response;
-                if (editingRoleId) {
-                    // Update
-                    delete data.external_id;  // Can't change ID
-                    response = await fetch(`${API_BASE}/organization/units/${editingRoleId}`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    });
-                } else {
-                    // Create
-                    response = await fetch(`${API_BASE}/organization/units`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    });
-                }
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.detail || 'Failed to save role');
-                }
-
-                showSuccess(editingRoleId ? 'Роль обновлена!' : 'Роль создана!');
-                closeRoleModal();
-                await loadRoles();
-            } catch (error) {
-                console.error('Error saving role:', error);
-                showError(`Ошибка сохранения роли: ${error.message}`);
-            }
-        });
-
-        // Delete role
-        async function deleteRole(roleId) {
-            if (!confirm('Удалить эту роль? Это действие нельзя отменить.')) return;
-
-            try {
-                const response = await fetch(`${API_BASE}/organization/units/${roleId}`, {
-                    method: 'DELETE'
-                });
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.detail || 'Failed to delete role');
-                }
-
-                showSuccess('Роль удалена');
-                await loadRoles();
-            } catch (error) {
-                console.error('Error deleting role:', error);
-                showError(`Ошибка удаления роли: ${error.message}`);
-            }
-        }
-        window.deleteRole = deleteRole;
-
-        // Manage capabilities
-        async function manageCapabilities(roleId) {
-            // For now, just open the capability modal
-            const role = currentRoles.find(r => r.id === roleId);
-            if (!role) return;
-
-            // TODO: Show capabilities list in a modal
-            alert(`Управление возможностями для роли "${role.title}" будет добавлено в следующей версии`);
-        }
-        window.manageCapabilities = manageCapabilities;
-
-        // ============ CORRECTIONS MANAGEMENT ============
-
-        async function loadCorrections() {
-            try {
-                const response = await fetch('/api/v1/classification/corrections');
-                if (!response.ok) throw new Error('Failed to load corrections');
-
-                const data = await response.json();
-                currentCorrections = data.corrections;
-                renderCorrections();
-            } catch (error) {
-                console.error('Failed to load corrections:', error);
-                document.getElementById('corrections-container').innerHTML =
-                    '<p style="color: red;">Ошибка загрузки исправлений</p>';
-            }
-        }
-
-        async function loadExamples() {
-            try {
-                const response = await fetch('/api/v1/classification/examples');
-                if (!response.ok) throw new Error('Failed to load examples');
-
-                const data = await response.json();
-                currentExamples = data.examples;
-                renderExamples();
-            } catch (error) {
-                console.error('Failed to load examples:', error);
-                document.getElementById('examples-container').innerHTML =
-                    '<p style="color: red;">Ошибка загрузки примеров</p>';
-            }
-        }
-
-        function showCorrectionsView() {
-            document.getElementById('corrections-view').style.display = 'block';
-            document.getElementById('examples-view').style.display = 'none';
-            document.getElementById('corrections-view-btn').style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-            document.getElementById('corrections-view-btn').style.color = 'white';
-            document.getElementById('examples-view-btn').style.background = '#e2e8f0';
-            document.getElementById('examples-view-btn').style.color = '#64748b';
-        }
-
-        function showExamplesView() {
-            document.getElementById('corrections-view').style.display = 'none';
-            document.getElementById('examples-view').style.display = 'block';
-            document.getElementById('corrections-view-btn').style.background = '#e2e8f0';
-            document.getElementById('corrections-view-btn').style.color = '#64748b';
-            document.getElementById('examples-view-btn').style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-            document.getElementById('examples-view-btn').style.color = 'white';
-
-            if (currentExamples.length === 0) {
-                loadExamples();
-            }
-        }
-
-        function renderCorrections() {
-            const container = document.getElementById('corrections-container');
-
-            if (currentCorrections.length === 0) {
-                container.innerHTML = '<p style="color: #718096;">Исправлений пока нет</p>';
-                return;
-            }
-
-            container.innerHTML = currentCorrections.map(corr => `
-                <div class="card" style="margin-bottom: 15px; padding: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <div style="flex: 1;">
-                            <div style="font-weight: 600; margin-bottom: 10px; color: #1a202c;">
-                                ${escapeHtml(corr.user_message)}
-                            </div>
-                            
-                            <div style="display: flex; gap: 20px; margin-bottom: 10px;">
-                                <div>
-                                    <div style="font-size: 12px; color: #718096; margin-bottom: 4px;">Было:</div>
-                                    <span style="background: #fee2e2; color: #dc2626; padding: 4px 8px; border-radius: 4px; font-size: 13px;">
-                                        ${corr.predicted_category || 'N/A'} / ${corr.predicted_intent || 'N/A'} / ${corr.predicted_priority || 'N/A'}
-                                    </span>
-                                </div>
-                                
-                                <div>
-                                    <div style="font-size: 12px; color: #718096; margin-bottom: 4px;">Стало:</div>
-                                    <span style="background: #d1fae5; color: #065f46; padding: 4px 8px; border-radius: 4px; font-size: 13px;">
-                                        ${corr.correct_category || 'N/A'} / ${corr.correct_intent || 'N/A'} / ${corr.correct_priority || 'N/A'}
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            ${corr.notes ? `<div style="font-size: 13px; color: #64748b; margin-top: 8px;">💡 ${escapeHtml(corr.notes)}</div>` : ''}
-                            
-                            <div style="font-size: 12px; color: #94a3b8; margin-top: 10px;">
-                                Использовано: ${corr.times_used} раз | 
-                                ${new Date(corr.created_at).toLocaleDateString('ru-RU')}
-                            </div>
-                        </div>
-                        
-                        <div style="display: flex; gap: 5px;">
-                            <button class="btn" onclick="promoteToExample(${corr.id})" 
-                                style="background: #10b981; padding: 8px 12px; font-size: 13px;" 
-                                title="Превратить в эталонный пример">
-                                ⬆️
-                            </button>
-                            <button class="btn" onclick="deleteCorrection(${corr.id})" 
-                                style="background: #ef4444; padding: 8px 12px; font-size: 13px;">
-                                🗑️
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function renderExamples() {
-            const container = document.getElementById('examples-container');
-
-            if (currentExamples.length === 0) {
-                container.innerHTML = '<p style="color: #718096;">Примеров пока нет</p>';
-                return;
-            }
-
-            container.innerHTML = currentExamples.map(ex => `
-                <div class="card" style="margin-bottom: 15px; padding: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <div style="flex: 1;">
-                            <div style="font-weight: 600; margin-bottom: 10px; color: #1a202c;">
-                                ${escapeHtml(ex.example_text)}
-                            </div>
-                            
-                            <div style="margin-bottom: 8px;">
-                                <span style="background: #dbeafe; color: #1e40af; padding: 4px 8px; border-radius: 4px; font-size: 13px; margin-right: 8px;">
-                                    ${ex.category}
-                                </span>
-                                ${ex.intent ? `
-                                <span style="background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 4px; font-size: 13px; margin-right: 8px;">
-                                    ${ex.intent}
-                                </span>
-                                ` : ''}
-                                ${ex.priority ? `
-                                <span style="background: #e0e7ff; color: #3730a3; padding: 4px 8px; border-radius: 4px; font-size: 13px;">
-                                    ${ex.priority}
-                                </span>
-                                ` : ''}
-                            </div>
-                            
-                            ${ex.reasoning ? `<div style="font-size: 13px; color: #64748b; margin-top: 8px;">💡 ${escapeHtml(ex.reasoning)}</div>` : ''}
-                            
-                            <div style="font-size: 12px; color: #94a3b8; margin-top: 10px;">
-                                Приоритет: ${ex.priority_order} | 
-                                Использовано: ${ex.times_used} раз | 
-                                ${ex.example_type} ${ex.source ? `(${ex.source})` : ''}
-                            </div>
-                        </div>
-                        
-                        <div style="display: flex; gap: 5px;">
-                            <button class="btn" onclick="deleteExample(${ex.id})" 
-                                style="background: #ef4444; padding: 8px 12px; font-size: 13px;">
-                                🗑️
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        async function deleteCorrection(id) {
-            if (!confirm('Удалить это исправление?')) return;
-
-            try {
-                const response = await fetch(`/api/v1/classification/corrections/${id}`, {
-                    method: 'DELETE'
-                });
-
-                if (!response.ok) throw new Error('Failed to delete correction');
-
-                currentCorrections = currentCorrections.filter(c => c.id !== id);
-                renderCorrections();
-                alert('Исправление удалено');
-            } catch (error) {
-                console.error('Failed to delete correction:', error);
-                alert('Ошибка при удалении');
-            }
-        }
-
-        async function deleteExample(id) {
-            if (!confirm('Удалить этот пример?')) return;
-
-            try {
-                const response = await fetch(`/api/v1/classification/examples/${id}`, {
-                    method: 'DELETE'
-                });
-
-                if (!response.ok) throw new Error('Failed to delete example');
-
-                currentExamples = currentExamples.filter(e => e.id !== id);
-                renderExamples();
-                alert('Пример удален');
-            } catch (error) {
-                console.error('Failed to delete example:', error);
-                alert('Ошибка при удалении');
-            }
-        }
-
-        async function promoteToExample(correctionId) {
-            if (!confirm('Превратить это исправление в эталонный пример?')) return;
-
-            try {
-                const response = await fetch(`/api/v1/classification/corrections/${correctionId}/promote`, {
-                    method: 'POST'
-                });
-
-                if (!response.ok) throw new Error('Failed to promote');
-
-                alert('Исправление превращено в эталонный пример!');
-                await loadCorrections();
-                await loadExamples();
-            } catch (error) {
-                console.error('Failed to promote correction:', error);
-                alert('Ошибка при создании примера');
-            }
-        }
-
-        async function openCreateExampleModal() {
-            // Simple prompt-based example creation
-            const text = prompt('Введите пример сообщения:');
-            if (!text) return;
-
-            const category = prompt('Категория:');
-            if (!category) return;
-
-            const intent = prompt('Намерение (необязательно):');
-            const priority = prompt('Приоритет (необязательно):');
-            const reasoning = prompt('Пояснение (необязательно):');
-
-            try {
-                const response = await fetch('/api/v1/classification/examples', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        example_text: text,
-                        category: category,
-                        intent: intent || null,
-                        priority: priority || null,
-                        reasoning: reasoning || null,
-                        priority_order: 0
-                    })
-                });
-
-                if (!response.ok) throw new Error('Failed to create example');
-
-                alert('Пример создан!');
-                await loadExamples();
-                showExamplesView();
-            } catch (error) {
-                console.error('Failed to create example:', error);
-                alert('Ошибка при создании примера');
-            }
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        window.loadCorrections = loadCorrections;
-        window.loadExamples = loadExamples;
-        window.showCorrectionsView = showCorrectionsView;
-        window.showExamplesView = showExamplesView;
-        window.deleteCorrection = deleteCorrection;
-        window.deleteExample = deleteExample;
-        window.promoteToExample = promoteToExample;
-        window.openCreateExampleModal = openCreateExampleModal;
-
-    </script>
+        }    </script>
 </body>
 
 </html>

@@ -23,6 +23,9 @@ class AgentConfigBase(BaseModel):
     temperature: float = Field(default=0.7, ge=0.0, le=2.0, description="LLM temperature")
     max_tokens: int = Field(default=2000, ge=100, le=32000, description="Max tokens")
     
+    # Tool configuration
+    enabled_tools: list[str] = Field(default=[], description="List of enabled tool IDs")
+    
     # Additional config
     additional_config: dict = Field(default={}, description="Additional configuration")
     
@@ -53,6 +56,9 @@ class AgentConfigUpdate(BaseModel):
     model: Optional[str] = Field(None, max_length=100)
     temperature: Optional[float] = Field(None, ge=0.0, le=2.0)
     max_tokens: Optional[int] = Field(None, ge=100, le=32000)
+    
+    # Tool configuration
+    enabled_tools: Optional[list[str]] = None
     
     # Additional config
     additional_config: Optional[dict] = None

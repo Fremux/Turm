@@ -187,6 +187,19 @@ class Settings:
         self.EMBEDDING_DIMENSION = int(os.getenv("EMBEDDING_DIMENSION", "4096"))  # Actual Qwen3-Embedding-4B dim
         self.EMBEDDING_KEY = os.getenv("EMBEDDING_KEY", "")  # DeepInfra API key
         self.EMBEDDING_URL = os.getenv("EMBEDDING_URL", "https://api.deepinfra.com/v1/openai")
+        
+        # SMTP Configuration (for email sending)
+        self.SMTP_HOST = os.getenv("SMTP_HOST", "")  # e.g., smtp.gmail.com
+        self.SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))  # 587 for TLS, 465 for SSL
+        self.SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")  # Your email
+        self.SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")  # App password for Gmail
+        self.SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", "")  # From email (defaults to username)
+        self.SMTP_USE_TLS = os.getenv("SMTP_USE_TLS", "true").lower() in ("true", "1", "t", "yes")
+
+        # YouTrack Integration
+        self.YOUTRACK_URL = os.getenv("YOUTRACK_URL", "")  # YouTrack base URL
+        self.YT_TOKEN = os.getenv("YT_TOKEN", "")  # YouTrack API token
+        self.YOUTRACK_DEFAULT_PROJECT = os.getenv("YOUTRACK_DEFAULT_PROJECT", "Trainings")  # Default project name
 
         # Rate Limiting Configuration
         self.RATE_LIMIT_DEFAULT = parse_list_from_env("RATE_LIMIT_DEFAULT", ["200 per day", "50 per hour"])

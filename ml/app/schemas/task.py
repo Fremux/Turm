@@ -42,6 +42,9 @@ class TaskResponse(BaseModel):
     priority: str
     category_id: Optional[int]
     category_name: Optional[str] = None
+    assigned_role_id: Optional[int] = None
+    assigned_role_title: Optional[str] = None
+    assigned_role_position: Optional[str] = None
     created_by: Optional[int]
     original_message: Optional[str]
     completed_at: Optional[datetime]

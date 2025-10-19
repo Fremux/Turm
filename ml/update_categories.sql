@@ -34,3 +34,6 @@ UPDATE categories SET
     border_cases = NULL
 WHERE name = 'office';
 
+
+
+

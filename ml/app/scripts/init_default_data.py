@@ -21,7 +21,9 @@ DEFAULT_CATEGORIES = {
         "common_intents": "отпуск (запрос, согласование, перенос), справки (2-НДФЛ, с места работы, для визы), больничный лист, зарплата и премии, трудовой договор, увольнение, адаптация новых сотрудников, ДМС и льготы",
         "key_markers": "отпуск, справка, зарплата, больничный, увольнение, трудовой договор, кадры, отдел кадров, HR, премия, компенсация, ДМС, страховка",
         "example_queries": "- Как оформить отпуск?\n- Нужна справка 2-НДФЛ\n- Когда будет зарплата?\n- Как продлить больничный?\n- Где взять справку с места работы?",
-        "border_cases": "Вопросы о корпоративных мероприятиях → hr (если связаны с льготами) или office (если организационные)"
+        "border_cases": "Вопросы о корпоративных мероприятиях → hr (если связаны с льготами) или office (если организационные)",
+        "embedding_model": "bge-m3",
+        "embedding_dimension": 1024
     },
     "it": {
         "display_name": "IT Support",
@@ -30,7 +32,9 @@ DEFAULT_CATEGORIES = {
         "common_intents": "проблемы с ПК (не включается, тормозит, зависает), доступы (к системам, папкам, почте), почта (не работает, не приходят письма), интернет и сеть, принтер и оргтехника, заказ оборудования (ноутбук, монитор, мышь), установка ПО, VPN",
         "key_markers": "компьютер, ноутбук, почта, email, интернет, wi-fi, доступ, пароль, программа, принтер, сеть, VPN, 1С, CRM, система",
         "example_queries": "- Не работает компьютер\n- Нужен доступ к общей папке\n- Не приходят письма на почту\n- Принтер не печатает\n- Нужен новый ноутбук",
-        "border_cases": "Вопросы о доступе в офис (пропуск) → office, не IT"
+        "border_cases": "Вопросы о доступе в офис (пропуск) → office, не IT",
+        "embedding_model": "bge-m3",
+        "embedding_dimension": 1024
     },
     "finance": {
         "display_name": "Finance",
@@ -39,7 +43,9 @@ DEFAULT_CATEGORIES = {
         "common_intents": "компенсация расходов (такси, обеды, командировки), выставление счета, получение акта/УПД, оплата поставщикам, закрывающие документы, налоги и отчетность, реквизиты компании",
         "key_markers": "счет, оплата, акт, УПД, компенсация, расходы, бухгалтерия, финансы, налог, реквизиты, закрывающие документы",
         "example_queries": "- Как получить компенсацию за такси?\n- Нужен счет на оплату\n- Где взять акт выполненных работ?\n- Когда придет оплата от клиента?",
-        "border_cases": "Зарплата и премии → hr, не finance"
+        "border_cases": "Зарплата и премии → hr, не finance",
+        "embedding_model": "bge-m3",
+        "embedding_dimension": 1024
     },
     "office": {
         "display_name": "Office Management",
@@ -48,7 +54,9 @@ DEFAULT_CATEGORIES = {
         "common_intents": "пропуск (оформление, продление, замена), парковка (место, пропуск), переговорная комната (бронирование, оборудование), рабочее место (переезд, мебель), офисные принадлежности (канцелярия), курьер и почта, уборка офиса, кухня и кофе",
         "key_markers": "пропуск, парковка, переговорка, офис, рабочее место, канцелярия, курьер, почта, уборка, кухня, кофе",
         "example_queries": "- Нужен пропуск в офис\n- Как забронировать переговорную?\n- Где взять канцелярию?\n- Нужно место на парковке",
-        "border_cases": "Корпоративные мероприятия могут быть как office (организация), так и hr (если связаны с льготами)"
+        "border_cases": "Корпоративные мероприятия могут быть как office (организация), так и hr (если связаны с льготами)",
+        "embedding_model": "bge-m3",
+        "embedding_dimension": 1024
     }
 }
 
@@ -75,6 +83,8 @@ async def init_default_categories():
                     existing.key_markers = data["key_markers"]
                     existing.example_queries = data["example_queries"]
                     existing.border_cases = data.get("border_cases", "")
+                    existing.embedding_model = data.get("embedding_model", "bge-m3")
+                    existing.embedding_dimension = data.get("embedding_dimension", 1024)
                     existing.is_active = True
                     session.add(existing)
                 else:
@@ -89,6 +99,8 @@ async def init_default_categories():
                         key_markers=data["key_markers"],
                         example_queries=data["example_queries"],
                         border_cases=data.get("border_cases", ""),
+                        embedding_model=data.get("embedding_model", "bge-m3"),
+                        embedding_dimension=data.get("embedding_dimension", 1024),
                         is_active=True
                     )
                     session.add(category)

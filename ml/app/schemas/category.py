@@ -24,8 +24,8 @@ class CategoryCreate(BaseModel):
     icon: Optional[str] = Field(None, description="UI icon name", max_length=50)
     
     # Embedding settings
-    embedding_model: Optional[str] = Field("text-embedding-3-small", description="Embedding model to use", max_length=100)
-    embedding_dimension: Optional[int] = Field(1536, description="Embedding vector dimension")
+    embedding_model: Optional[str] = Field("bge-m3", description="Embedding model to use", max_length=100)
+    embedding_dimension: Optional[int] = Field(1024, description="Embedding vector dimension")
     
     create_collection: bool = Field(default=True, description="Auto-create vector collection")
 

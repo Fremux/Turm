@@ -81,19 +81,53 @@ class KnowledgeSearchTool(BaseTool):
             if not collection_name:
                 return f"Ошибка: неизвестная категория '{category}'. Доступные: it, hr, finance, office"
             
+            # Get category embedding settings from database
+            from sqlmodel import Session, select
+            from app.models.category import Category
+            from app.services.database import database_service
+            from app.core.embedding_models import get_model_info, DEFAULT_MODEL_NAME, DEFAULT_DIMENSION
+            
+            embedding_model = DEFAULT_MODEL_NAME
+            embedding_dim = DEFAULT_DIMENSION
+            
+            with Session(database_service.engine) as db:
+                cat = db.exec(select(Category).where(Category.name == category_lower)).first()
+                if cat and cat.embedding_model:
+                    # Get model info - use actual dimension from model mapping
+                    model_name, model_dim = get_model_info(cat.embedding_model)
+                    embedding_model = model_name
+                    embedding_dim = cat.embedding_dimension or model_dim
+                    
+                    # Validate dimension matches model
+                    if cat.embedding_dimension and cat.embedding_dimension != model_dim:
+                        logger.warning(
+                            "dimension_mismatch",
+                            category=category,
+                            db_dimension=cat.embedding_dimension,
+                            model_dimension=model_dim,
+                            model=cat.embedding_model,
+                            using_dimension=cat.embedding_dimension
+                        )
+                        # Use what's in DB (as collection was created with it)
+                        embedding_dim = cat.embedding_dimension
+            
             logger.info(
                 "knowledge_search_started",
                 query=query,
                 category=category,
                 collection=collection_name,
-                limit=limit
+                limit=limit,
+                embedding_model=embedding_model,
+                embedding_dim=embedding_dim
             )
             
-            # Search in Qdrant
+            # Search in Qdrant with category-specific embeddings
             results = await qdrant_service.search(
                 query=query,
                 limit=limit,
-                collection_name=collection_name
+                collection_name=collection_name,
+                embedding_model=embedding_model,
+                embedding_dimension=embedding_dim
             )
             
             if not results:

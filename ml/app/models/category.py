@@ -37,8 +37,8 @@ class Category(BaseModel, table=True):
     collection_created: bool = Field(default=False)
     
     # Embedding settings for this category's collection
-    embedding_model: Optional[str] = Field(default="text-embedding-3-small", max_length=100)
-    embedding_dimension: Optional[int] = Field(default=1536)
+    embedding_model: Optional[str] = Field(default="bge-m3", max_length=100)
+    embedding_dimension: Optional[int] = Field(default=1024)
     
     # Status
     is_active: bool = Field(default=True, index=True)

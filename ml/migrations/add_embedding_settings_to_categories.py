@@ -40,7 +40,7 @@ def migrate():
                 logger.info("adding_embedding_dimension_column")
                 conn.execute(text("""
                     ALTER TABLE categories 
-                    ADD COLUMN embedding_dimension INTEGER DEFAULT 1536
+                    ADD COLUMN embedding_dimension INTEGER DEFAULT 768
                 """))
                 logger.info("embedding_dimension_column_added")
             else:
@@ -55,4 +55,5 @@ def migrate():
 
 if __name__ == "__main__":
     migrate()
+
 

@@ -19,6 +19,37 @@ from app.schemas.task import (
 router = APIRouter()
 
 
+def _build_task_response(task: Task, category_name: Optional[str] = None) -> TaskResponse:
+    """Helper function to build TaskResponse with role information."""
+    assigned_role_title = None
+    assigned_role_position = None
+    
+    if task.assigned_role:
+        assigned_role_title = task.assigned_role.title
+        assigned_role_position = task.assigned_role.position
+    
+    return TaskResponse(
+        id=task.id,
+        summary=task.summary,
+        description=task.description,
+        assignee=task.assignee,
+        status=task.status,
+        priority=task.priority,
+        category_id=task.category_id,
+        category_name=category_name,
+        assigned_role_id=task.assigned_role_id,
+        assigned_role_title=assigned_role_title,
+        assigned_role_position=assigned_role_position,
+        created_by=task.created_by,
+        original_message=task.original_message,
+        completed_at=task.completed_at,
+        completed_by=task.completed_by,
+        notes=task.notes,
+        created_at=task.created_at,
+        updated_at=task.updated_at
+    )
+
+
 # Task Management Endpoints
 
 @router.post("/tasks", response_model=TaskResponse)
@@ -47,12 +78,26 @@ async def create_task(
                 raise HTTPException(status_code=404, detail="Category not found")
             category_name = category.name
         
+        # Try to assign to a role based on task content
+        assigned_role = None
+        try:
+            from app.services.role_assignment_service import role_assignment_service
+            assigned_role = role_assignment_service.find_best_role(
+                task_summary=task.summary,
+                task_description=task.description,
+                category=category_name,
+                session=db
+            )
+        except Exception as role_error:
+            logger.warning(f"Could not assign role: {role_error}")
+        
         # Create task
         new_task = Task(
             summary=task.summary,
             description=task.description,
             assignee=task.assignee,
             category_id=task.category_id,
+            assigned_role_id=assigned_role.id if assigned_role else None,
             priority=task.priority,
             original_message=task.original_message,
             created_by=task.created_by,
@@ -70,23 +115,26 @@ async def create_task(
             category=category_name
         )
         
-        return TaskResponse(
-            id=new_task.id,
-            summary=new_task.summary,
-            description=new_task.description,
-            assignee=new_task.assignee,
-            status=new_task.status,
-            priority=new_task.priority,
-            category_id=new_task.category_id,
-            category_name=category_name,
-            created_by=new_task.created_by,
-            original_message=new_task.original_message,
-            completed_at=new_task.completed_at,
-            completed_by=new_task.completed_by,
-            notes=new_task.notes,
-            created_at=new_task.created_at,
-            updated_at=new_task.updated_at
-        )
+        # Try to sync task to YouTrack (non-blocking)
+        try:
+            from app.services.youtrack_service import youtrack_service
+            
+            if youtrack_service.is_enabled():
+                # Create task in YouTrack with only summary and description
+                yt_task = youtrack_service.create_task(
+                    summary=new_task.summary,
+                    description=new_task.description
+                )
+                
+                if yt_task:
+                    yt_id = yt_task.get('idReadable', 'Unknown')
+                    new_task.notes = f"YouTrack: {yt_id}"
+                    db.commit()
+                    logger.info("task_synced_to_youtrack", task_id=new_task.id, youtrack_id=yt_id)
+        except Exception as yt_error:
+            logger.error("youtrack_sync_error", task_id=new_task.id, error=str(yt_error))
+        
+        return _build_task_response(new_task, category_name)
         
     except HTTPException:
         raise
@@ -165,23 +213,7 @@ async def list_tasks(
                 if category:
                     category_name = category.name
             
-            responses.append(TaskResponse(
-                id=task.id,
-                summary=task.summary,
-                description=task.description,
-                assignee=task.assignee,
-                status=task.status,
-                priority=task.priority,
-                category_id=task.category_id,
-                category_name=category_name,
-                created_by=task.created_by,
-                original_message=task.original_message,
-                completed_at=task.completed_at,
-                completed_by=task.completed_by,
-                notes=task.notes,
-                created_at=task.created_at,
-                updated_at=task.updated_at
-            ))
+            responses.append(_build_task_response(task, category_name))
         
         return TasksListResponse(tasks=responses, total=total)
         
@@ -218,23 +250,7 @@ async def get_task(
         if category:
             category_name = category.name
     
-    return TaskResponse(
-        id=task.id,
-        summary=task.summary,
-        description=task.description,
-        assignee=task.assignee,
-        status=task.status,
-        priority=task.priority,
-        category_id=task.category_id,
-        category_name=category_name,
-        created_by=task.created_by,
-        original_message=task.original_message,
-        completed_at=task.completed_at,
-        completed_by=task.completed_by,
-        notes=task.notes,
-        created_at=task.created_at,
-        updated_at=task.updated_at
-    )
+    return _build_task_response(task, category_name)
 
 
 @router.patch("/tasks/{task_id}", response_model=TaskResponse)
@@ -291,23 +307,7 @@ async def update_task(
     
     logger.info("task_updated", task_id=task_id, status=task.status)
     
-    return TaskResponse(
-        id=task.id,
-        summary=task.summary,
-        description=task.description,
-        assignee=task.assignee,
-        status=task.status,
-        priority=task.priority,
-        category_id=task.category_id,
-        category_name=category_name,
-        created_by=task.created_by,
-        original_message=task.original_message,
-        completed_at=task.completed_at,
-        completed_by=task.completed_by,
-        notes=task.notes,
-        created_at=task.created_at,
-        updated_at=task.updated_at
-    )
+    return _build_task_response(task, category_name)
 
 
 @router.delete("/tasks/{task_id}")

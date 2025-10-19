@@ -16,6 +16,9 @@ from app.api.v1.analyses import router as analyses_router
 from app.api.v1.categories import router as categories_router
 from app.api.v1.agents import router as agents_router
 from app.api.v1.tasks import router as tasks_router
+from app.api.v1.settings import router as settings_router
+from app.api.v1.organization import router as organization_router
+from app.api.v1.classification_corrections import router as classification_corrections_router
 from app.core.logging import logger
 
 api_router = APIRouter()
@@ -31,6 +34,9 @@ api_router.include_router(analyses_router, prefix="/analyses", tags=["analyses"]
 api_router.include_router(categories_router, prefix="/admin", tags=["admin"])
 api_router.include_router(agents_router, prefix="/admin", tags=["admin"])
 api_router.include_router(tasks_router, prefix="/admin", tags=["admin"])
+api_router.include_router(settings_router, prefix="/admin", tags=["admin"])
+api_router.include_router(organization_router, prefix="/admin", tags=["admin"])
+api_router.include_router(classification_corrections_router, prefix="/classification", tags=["classification"])
 
 
 @api_router.get("/health")

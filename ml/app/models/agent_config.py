@@ -74,11 +74,18 @@ class AgentConfiguration(BaseModel, table=True):
         description="Maximum tokens for LLM response"
     )
     
+    # Tool configuration
+    enabled_tools: list[str] = Field(
+        default=[],
+        sa_column=Column(JSON),
+        description="List of enabled tool IDs from tool registry (e.g., ['knowledge_search', 'calculator'])"
+    )
+    
     # Additional configuration (flexible JSON field)
     additional_config: dict = Field(
         default={},
         sa_column=Column(JSON),
-        description="Additional config: tools, qdrant_collection, response_format, etc"
+        description="Additional config: qdrant_collection, response_format, tool_configs, etc"
     )
     
     # Status and priority

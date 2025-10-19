@@ -1,13 +1,16 @@
 """Documents endpoints for RAG document management."""
 
 from typing import List, Optional
-from fastapi import APIRouter, File, UploadFile, HTTPException, Request, Query
+
+from fastapi import APIRouter, File, UploadFile, HTTPException, Request, Query, Depends
 from pydantic import BaseModel, Field
+from sqlmodel import Session
 
 from app.core.config import settings
 from app.core.limiter import limiter
 from app.core.logging import logger
 from app.services.qdrant_service import qdrant_service
+from app.services.database import get_db_session
 
 router = APIRouter()
 
@@ -62,7 +65,7 @@ class DocumentInfo(BaseModel):
 class SearchRequest(BaseModel):
     """Search request."""
     
-    query: str = Field(..., description="Search query", min_length=1, max_length=500)
+    query: str = Field(..., description="Search query", min_length=1, max_length=5000)
     limit: int = Field(default=5, description="Number of results", ge=1, le=20)
     collection_name: Optional[str] = Field(None, description="Collection to search in")
 
@@ -223,7 +226,8 @@ async def upload_document(
     collection_name: Optional[str] = Query(default=None),
     chunk_size: int = Query(default=512, ge=100, le=2048),
     chunk_overlap: int = Query(default=128, ge=0, le=512),
-    chunker_type: str = Query(default="token", regex="^(token|sentence|recursive|semantic|slumber)$")
+    chunker_type: str = Query(default="token", regex="^(token|sentence|recursive|semantic|slumber)$"),
+    db: Session = Depends(get_db_session)
 ):
     """Upload a document (MD or CSV).
     
@@ -235,6 +239,7 @@ async def upload_document(
         chunk_size: Size of chunks in tokens (recommended: 200-300 for semantic/slumber, 512-1024 for others)
         chunk_overlap: Overlap between chunks
         chunker_type: Type of chunker (token, sentence, recursive, semantic, slumber)
+        db: Database session
         
     Returns:
         DocumentUploadResponse: Upload result
@@ -258,13 +263,29 @@ async def upload_document(
         content = await file.read()
         text_content = content.decode('utf-8')
         
+        # Get category embedding model if collection name matches category
+        embedding_model = None
+        if collection_name:
+            from app.models.category import Category
+            category = db.query(Category).filter(
+                Category.collection_name == collection_name
+            ).first()
+            if category and category.embedding_model:
+                embedding_model = category.embedding_model
+                logger.info(
+                    "using_category_embedding_model",
+                    collection=collection_name,
+                    embedding_model=embedding_model
+                )
+        
         logger.info(
             "document_upload_received",
             filename=file.filename,
             user_id=user_id,
             size=len(text_content),
             file_type=file_ext,
-            collection=collection_name
+            collection=collection_name,
+            embedding_model=embedding_model
         )
         
         # Upload based on file type
@@ -277,7 +298,8 @@ async def upload_document(
                 collection_name=collection_name,
                 chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap,
-                chunker_type=chunker_type
+                chunker_type=chunker_type,
+                embedding_model=embedding_model
             )
         else:  # md
             result = await qdrant_service.upload_document(
@@ -288,7 +310,8 @@ async def upload_document(
                 collection_name=collection_name,
                 chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap,
-                chunker_type=chunker_type
+                chunker_type=chunker_type,
+                embedding_model=embedding_model
             )
         
         return DocumentUploadResponse(**result)

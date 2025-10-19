@@ -386,6 +386,7 @@ async def delete_category(
 async def create_category_collection(
     request: Request,
     category_id: int,
+    force_recreate: bool = Query(default=False, description="Force recreation if collection exists"),
     db: Session = Depends(get_db_session)
 ):
     """Create a Qdrant collection for a category."""
@@ -394,14 +395,25 @@ async def create_category_collection(
         if not category:
             raise HTTPException(status_code=404, detail="Category not found")
         
-        if category.collection_created:
+        if category.collection_created and not force_recreate:
             raise HTTPException(
                 status_code=400,
-                detail=f"Collection '{category.collection_name}' already exists"
+                detail=f"Collection '{category.collection_name}' already exists. Use force_recreate=true to recreate."
             )
         
         # Use category-specific embedding dimension or fall back to settings default
         embedding_size = category.embedding_dimension or settings.EMBEDDING_DIMENSION
+        
+        # Delete existing collection if force_recreate
+        if force_recreate and category.collection_created:
+            try:
+                qdrant_service.delete_collection(category.collection_name)
+                logger.info(
+                    "collection_deleted_for_recreation",
+                    collection=category.collection_name
+                )
+            except Exception as e:
+                logger.warning(f"Could not delete existing collection: {e}")
         
         # Create collection in Qdrant
         qdrant_service.create_collection(
@@ -632,4 +644,138 @@ async def delete_intent(
     
     logger.info("intent_deleted", intent_id=intent_id)
     return {"message": "Intent deleted successfully", "intent_id": intent_id}
+
+
+# Feedback / Training Endpoints
+
+@router.post("/categories/{category_id}/add-training-example")
+@limiter.limit(settings.RATE_LIMIT_ENDPOINTS["messages"][0])
+async def add_category_training_example(
+    request: Request,
+    category_id: int,
+    example: dict,
+    db: Session = Depends(get_db_session)
+):
+    """Add a training example to category's border cases.
+    
+    When user corrects misclassification, add the example to help improve future classifications.
+    
+    Args:
+        category_id: Correct category ID
+        example: {"text": "user message that was misclassified"}
+    """
+    try:
+        category = db.get(Category, category_id)
+        if not category:
+            raise HTTPException(status_code=404, detail="Category not found")
+        
+        text = example.get("text", "").strip()
+        if not text:
+            raise HTTPException(status_code=400, detail="Example text is required")
+        
+        # Add to border_cases (or create if doesn't exist)
+        current_border_cases = category.border_cases or ""
+        
+        # Format: add as a new line with timestamp
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y-%m-%d")
+        new_example = f"- [{timestamp}] {text}"
+        
+        if current_border_cases:
+            category.border_cases = f"{current_border_cases}\n{new_example}"
+        else:
+            category.border_cases = new_example
+        
+        db.add(category)
+        db.commit()
+        db.refresh(category)
+        
+        # Refresh classifier to use updated examples
+        classification_agent.refresh_categories()
+        
+        logger.info(
+            "training_example_added",
+            category_id=category_id,
+            category_name=category.name,
+            example_text=text[:100]
+        )
+        
+        return {
+            "success": True,
+            "message": f"Пример добавлен в категорию '{category.name}'",
+            "category_id": category_id,
+            "category_name": category.name
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("add_training_example_error", error=str(e), exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/intents/{intent_id}/add-training-example")
+@limiter.limit(settings.RATE_LIMIT_ENDPOINTS["messages"][0])
+async def add_intent_training_example(
+    request: Request,
+    intent_id: int,
+    example: dict,
+    db: Session = Depends(get_db_session)
+):
+    """Add a training example to intent's examples.
+    
+    When user corrects intent misclassification, add the example to help improve future classifications.
+    
+    Args:
+        intent_id: Correct intent ID
+        example: {"text": "user message that was misclassified"}
+    """
+    try:
+        intent = db.get(Intent, intent_id)
+        if not intent:
+            raise HTTPException(status_code=404, detail="Intent not found")
+        
+        text = example.get("text", "").strip()
+        if not text:
+            raise HTTPException(status_code=400, detail="Example text is required")
+        
+        # Add to examples
+        current_examples = intent.examples or ""
+        
+        # Format: add as a new line with timestamp
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y-%m-%d")
+        new_example = f"- [{timestamp}] {text}"
+        
+        if current_examples:
+            intent.examples = f"{current_examples}\n{new_example}"
+        else:
+            intent.examples = new_example
+        
+        db.add(intent)
+        db.commit()
+        db.refresh(intent)
+        
+        # Refresh classifier to use updated examples
+        classification_agent.refresh_categories()
+        
+        logger.info(
+            "intent_training_example_added",
+            intent_id=intent_id,
+            intent_name=intent.name,
+            example_text=text[:100]
+        )
+        
+        return {
+            "success": True,
+            "message": f"Пример добавлен в намерение '{intent.name}'",
+            "intent_id": intent_id,
+            "intent_name": intent.name
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("add_intent_training_example_error", error=str(e), exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 

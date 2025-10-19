@@ -89,7 +89,17 @@ class ReActAgent:
 
 У тебя есть доступ к БАЗЕ ЗНАНИЙ компании через инструмент `search_knowledge_base`.
 
-Твоя задача - РЕШЕНИЕ ПРОБЛЕМ с использованием базы знаний:
+## ВАЖНО: Тип намерения определяет тип ответа
+
+**Перед ответом ВСЕГДА проверяй намерение (intent) пользователя:**
+
+### Если намерение "ask_question" (задаёт вопрос):
+- Пользователь просто интересуется информацией
+- НЕ НУЖНО задавать уточняющие вопросы
+- Ответь на вопрос напрямую, кратко и по существу
+- Используй базу знаний если нужно
+
+### Если намерение "report_issue" или "task_creation" (сообщает о проблеме / просит что-то сделать):
 
 1. **Оценка информации**: Проанализируй, достаточно ли данных для решения
    
@@ -223,7 +233,17 @@ class ReActAgent:
         
         # Add system prompt if this is the first call
         if len(messages) == 1:
-            messages = [SystemMessage(content=self.system_prompt)] + list(messages)
+            # Add intent information to system prompt
+            system_content = self.system_prompt
+            
+            classification = state.get("classification")
+            if classification:
+                intent = classification.get('intent') if isinstance(classification, dict) else getattr(classification, 'intent', None)
+                if intent:
+                    system_content += f"\n\n**ТЕКУЩЕЕ НАМЕРЕНИЕ ПОЛЬЗОВАТЕЛЯ: {intent}**\n"
+                    system_content += "Действуй согласно этому намерению как описано выше!"
+            
+            messages = [SystemMessage(content=system_content)] + list(messages)
         
         try:
             response = await self.llm_with_tools.ainvoke(messages)
@@ -261,11 +281,21 @@ class ReActAgent:
                 - messages: The full conversation history
         """
         try:
+            # Helper to get attribute from dict or object
+            def get_class_attr(obj, attr, default=''):
+                return obj.get(attr, default) if isinstance(obj, dict) else getattr(obj, attr, default)
+            
+            # Extract classification attributes
+            category = get_class_attr(classification, 'category', 'unknown')
+            priority = get_class_attr(classification, 'priority', 'medium')
+            reasoning = get_class_attr(classification, 'reasoning', 'No reasoning')
+            confidence = get_class_attr(classification, 'confidence', 0.5)
+            
             logger.info(
                 "react_agent_analysis_started",
                 session_id=session_id,
-                category=classification.category,
-                priority=classification.priority
+                category=category,
+                priority=priority
             )
             
             # Create the graph if not exists
@@ -278,10 +308,10 @@ class ReActAgent:
 **Проблема**: {user_message}
 
 **Классификация**:
-- Категория: {classification.category.upper()}
-- Приоритет: {classification.priority.upper()}
-- Обоснование: {classification.reasoning}
-- Уверенность: {classification.confidence:.0%}
+- Категория: {category.upper() if isinstance(category, str) else category}
+- Приоритет: {priority.upper() if isinstance(priority, str) else priority}
+- Обоснование: {reasoning}
+- Уверенность: {f'{confidence:.0%}' if isinstance(confidence, (int, float)) else confidence}
 
 Проанализируй проблему. Если информации достаточно - сразу предложи решение. Если нет - задай 2-3 конкретных вопроса."""
             
@@ -290,10 +320,10 @@ class ReActAgent:
                 "messages": [HumanMessage(content=context_message)],
                 "session_id": session_id,
                 "classification": {
-                    "category": classification.category,
-                    "priority": classification.priority,
-                    "reasoning": classification.reasoning,
-                    "confidence": classification.confidence,
+                    "category": category,
+                    "priority": priority,
+                    "reasoning": reasoning,
+                    "confidence": confidence,
                 },
                 "problem_summary": None,
             }
@@ -323,10 +353,10 @@ class ReActAgent:
             
             return {
                 "classification": {
-                    "category": classification.category,
-                    "priority": classification.priority,
-                    "reasoning": classification.reasoning,
-                    "confidence": classification.confidence,
+                    "category": category,
+                    "priority": priority,
+                    "reasoning": reasoning,
+                    "confidence": confidence,
                 },
                 "session_id": session_id,
                 "summary": summary,
@@ -405,6 +435,11 @@ class ReActAgent:
         Returns:
             A formatted summary string
         """
+        # Handle both dict and object
+        category = classification.get('category', 'unknown') if isinstance(classification, dict) else getattr(classification, 'category', 'unknown')
+        priority = classification.get('priority', 'medium') if isinstance(classification, dict) else getattr(classification, 'priority', 'medium')
+        reasoning = classification.get('reasoning', '') if isinstance(classification, dict) else getattr(classification, 'reasoning', '')
+        
         summary = f"""
 === АНАЛИЗ ПРОБЛЕМЫ ===
 
@@ -412,9 +447,9 @@ class ReActAgent:
 {problem}
 
 Классификация:
-- Отдел: {classification.category.upper()}
-- Приоритет: {classification.priority.upper()}
-- Обоснование: {classification.reasoning}
+- Отдел: {category.upper() if isinstance(category, str) else category}
+- Приоритет: {priority.upper() if isinstance(priority, str) else priority}
+- Обоснование: {reasoning}
 
 Решение:
 {solution}

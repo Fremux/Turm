@@ -23,6 +23,11 @@ from app.core.config import (
 from app.core.logging import logger
 from app.models.session import Session as ChatSession
 from app.models.user import User
+# Import new models to register them with SQLModel
+from app.models.classification_correction import (
+    ClassificationCorrection,
+    ClassificationExample
+)
 
 
 class DatabaseService:

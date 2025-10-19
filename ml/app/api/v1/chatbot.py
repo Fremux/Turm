@@ -129,12 +129,26 @@ async def _create_task_if_needed(user_message: str, classification, user_id: int
             if category:
                 category_id = category.id
         
+        # Try to assign to a role based on task content
+        assigned_role = None
+        try:
+            from app.services.role_assignment_service import role_assignment_service
+            assigned_role = role_assignment_service.find_best_role(
+                task_summary=extraction.summary,
+                task_description=extraction.description,
+                category=category_name,
+                session=db
+            )
+        except Exception as role_error:
+            logger.warning(f"Could not assign role: {role_error}")
+        
         # Create task
         task = Task(
             summary=extraction.summary,
             description=extraction.description,
             assignee=extraction.assignee,
             category_id=category_id,
+            assigned_role_id=assigned_role.id if assigned_role else None,
             priority=extraction.priority,
             original_message=user_message,
             created_by=user_id,
@@ -152,6 +166,37 @@ async def _create_task_if_needed(user_message: str, classification, user_id: int
             priority=task.priority,
             confidence=extraction.confidence
         )
+        
+        # Try to create task in YouTrack (non-blocking, optional)
+        try:
+            from app.services.youtrack_service import youtrack_service
+            
+            if youtrack_service.is_enabled():
+                # Create task in YouTrack with only summary and description
+                yt_task = youtrack_service.create_task(
+                    summary=task.summary,
+                    description=task.description
+                )
+                
+                if yt_task:
+                    # Update task notes with YouTrack ID
+                    yt_id = yt_task.get('idReadable', 'Unknown')
+                    task.notes = f"YouTrack: {yt_id}"
+                    db.commit()
+                    logger.info("task_synced_to_youtrack", task_id=task.id, youtrack_id=yt_id)
+                else:
+                    logger.warning("task_youtrack_sync_failed", task_id=task.id, reason="Creation failed")
+            else:
+                logger.debug("youtrack_sync_skipped", task_id=task.id, reason="Integration disabled")
+                
+        except Exception as yt_error:
+            # Don't fail the whole operation if YouTrack sync fails
+            logger.error(
+                "youtrack_sync_error",
+                task_id=task.id,
+                error=str(yt_error),
+                message="Задача создана в системе, но не удалось добавить в YouTrack"
+            )
         
         return task
         

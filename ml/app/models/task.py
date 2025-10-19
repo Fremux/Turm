@@ -9,6 +9,7 @@ from app.models.base import BaseModel
 if TYPE_CHECKING:
     from app.models.user import User
     from app.models.category import Category
+    from app.models.organization import OrganizationUnit
 
 
 class TaskStatus:
@@ -45,6 +46,10 @@ class Task(BaseModel, table=True):
     category_id: Optional[int] = Field(default=None, foreign_key="categories.id", index=True)
     category: Optional["Category"] = Relationship()
     
+    # Assigned role from organization structure
+    assigned_role_id: Optional[int] = Field(default=None, foreign_key="organization_units.id", index=True)
+    assigned_role: Optional["OrganizationUnit"] = Relationship(back_populates="tasks")
+    
     # Creator (who requested the task) - just store ID without foreign key
     created_by: Optional[int] = Field(default=None)
     
@@ -68,4 +73,5 @@ class Task(BaseModel, table=True):
 # Avoid circular imports
 from app.models.user import User
 from app.models.category import Category
+from app.models.organization import OrganizationUnit
 
